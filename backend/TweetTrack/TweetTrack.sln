@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TweetTrack.Common", "TweetTrack.Common\TweetTrack.Common.csproj", "{95AF597D-C862-49B7-928D-9E00F824C330}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TweetTrack.Interfaces", "TweetTrack.Interfaces\TweetTrack.Interfaces.csproj", "{64B898FF-B46B-476F-809D-C79C46E612B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TweetTrack.Repository", "TweetTrack.Repository\TweetTrack.Repository.csproj", "{869D843E-6A9F-4448-A5D9-4A75DEC2FC27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TweetTrack.Services", "TweetTrack.Services\TweetTrack.Services.csproj", "{87D1FF21-ACF9-4BB1-AA12-1B721F8FEA31}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TweetTrack.Api", "TweetTrack.Api\TweetTrack.Api.csproj", "{F2ABAEB4-3E02-4610-B1DC-78973C50444B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{95AF597D-C862-49B7-928D-9E00F824C330}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95AF597D-C862-49B7-928D-9E00F824C330}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95AF597D-C862-49B7-928D-9E00F824C330}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95AF597D-C862-49B7-928D-9E00F824C330}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64B898FF-B46B-476F-809D-C79C46E612B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64B898FF-B46B-476F-809D-C79C46E612B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64B898FF-B46B-476F-809D-C79C46E612B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64B898FF-B46B-476F-809D-C79C46E612B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{869D843E-6A9F-4448-A5D9-4A75DEC2FC27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{869D843E-6A9F-4448-A5D9-4A75DEC2FC27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{869D843E-6A9F-4448-A5D9-4A75DEC2FC27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{869D843E-6A9F-4448-A5D9-4A75DEC2FC27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87D1FF21-ACF9-4BB1-AA12-1B721F8FEA31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87D1FF21-ACF9-4BB1-AA12-1B721F8FEA31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87D1FF21-ACF9-4BB1-AA12-1B721F8FEA31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87D1FF21-ACF9-4BB1-AA12-1B721F8FEA31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2ABAEB4-3E02-4610-B1DC-78973C50444B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2ABAEB4-3E02-4610-B1DC-78973C50444B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2ABAEB4-3E02-4610-B1DC-78973C50444B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2ABAEB4-3E02-4610-B1DC-78973C50444B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
