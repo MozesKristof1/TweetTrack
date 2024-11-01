@@ -1,20 +1,11 @@
 import SwiftUI
 
-enum Tab {
-    case home, sound, profile
-}
-
-struct CustomNavigationView: View {
-    @Binding var selectedTab: Tab
-    var onTabSelected: ((Tab) -> Void)?
-
+struct BottomNavigationView: View {
     var body: some View {
         VStack {
-            Spacer()
             HStack {
                 Button(action: {
-                    selectedTab = .home
-                    onTabSelected?(.home)
+                    print("Home tapped")
                 }) {
                     Image(systemName: "bird.circle.fill")
                         .resizable()
@@ -24,8 +15,7 @@ struct CustomNavigationView: View {
                 .frame(maxWidth: .infinity)
 
                 Button(action: {
-                    selectedTab = .sound
-                    onTabSelected?(.sound)
+                    print("Sound tapped")
                 }) {
                     Image(systemName: "waveform")
                         .resizable()
@@ -35,8 +25,7 @@ struct CustomNavigationView: View {
                 .frame(maxWidth: .infinity)
 
                 Button(action: {
-                    selectedTab = .profile
-                    onTabSelected?(.profile)
+                    print("Profile tapped")
                 }) {
                     Image(systemName: "person.fill")
                         .resizable()
@@ -45,14 +34,13 @@ struct CustomNavigationView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 0)
             .background(Color(.secondarySystemBackground))
         }
     }
 }
 
 #Preview {
-    CustomNavigationView(selectedTab: .constant(.home), onTabSelected: { tab in
-        print("\(tab) tapped")
-    })
+    BottomNavigationView()
 }
