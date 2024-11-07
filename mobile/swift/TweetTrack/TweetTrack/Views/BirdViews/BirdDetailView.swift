@@ -18,23 +18,8 @@ struct BirdDetailView: View {
                 .padding()
 
             Spacer()
-
-            Map(position: $position) {
-                UserAnnotation()
-            }
-            .mapControls{
-                MapUserLocationButton()
-            }
-            .frame(height: 300)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(radius: 4)
-            .padding()
-            .onAppear {
-                manager.requestWhenInUseAuthorization()
-            }
             
-            
+            MapCard(position: $position, manager: manager)
             
         }
         .padding()
