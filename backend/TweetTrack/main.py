@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 
 from src.models.bird import Bird
+from src.models.birdLocation import BirdLocation
 
 app = FastAPI()
 
@@ -35,3 +36,27 @@ async def get_birds():
         ),
     ]
     return birds
+
+@app.get("/location", response_model=List[BirdLocation])
+async def get_location():
+    locations = [
+        BirdLocation(
+            id=UUID("cf6a81c1-9f0c-4d72-b37b-56757b5a8b1b"),
+            birdId=UUID("df2a3c52-bbe6-4b61-a032-8e3aff5d3dd0"),
+            latitude=34.0522,
+            longitude=-118.2437
+        ),
+        BirdLocation(
+            id=UUID("71ef4f23-8535-4bbd-8c76-4f7b8f6a087b"),
+            birdId=UUID("df2a3c52-bbe6-4b61-a032-8e3aff5d3dd0"),
+            latitude=40.7128,
+            longitude=-74.0060
+        ),
+        BirdLocation(
+            id=UUID("a73c9832-6af9-4e4a-9a59-320f4b3f1b57"),
+            birdId=UUID("df2a3c52-bbe6-4b61-a032-8e3aff5d3dd0"),
+            latitude=51.5074,
+            longitude=-0.1278
+        ),
+    ]
+    return locations
