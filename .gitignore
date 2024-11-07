@@ -5,12 +5,6 @@
 *.user
 *.userprefs
 *.unityproj
-*.dll
-*.exe
-*.pdb
-*.mdb
-*.cache
-*.log
 *.ncb
 *.opendb
 *.sdf
@@ -18,36 +12,76 @@
 *.vspx
 *.vssscc
 *.vsscc
-*.vssscc
-*.vsscc
 *.scc
-*.cache
 bin/
 obj/
-packages/
-project.lock.json
-project.fragment.lock.json
 .vscode
 
 # Rider
 .idea/
 *.sln.iml
 
-# DotNet
-*.db
-*.db-shm
-*.db-wal
-*.pdb
-*.dll
-*.exe
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.ipynb_checkpoints
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# NuGet Packages
-*.nupkg
-*.snupkg
-*.nuspec
-*.symbols.nupkg
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
 
-#Xcode
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.idea/
+
+# Pytest
+.pytest_cache/
+.cache/
+
+# Pycharm
+.idea/
+
+# Distribution / Packaging
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Unit test / coverage reports
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# Xcode
 .DS_Store
 *.xcuserstate
 *.xcworkspace
