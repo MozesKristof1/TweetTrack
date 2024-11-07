@@ -19,7 +19,7 @@ struct BirdDetailView: View {
 
             Spacer()
             
-            MapCard(position: $position, manager: manager)
+            MapCardView(position: $position, manager: manager)
             
         }
         .padding()

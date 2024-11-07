@@ -1,7 +1,7 @@
 import MapKit
 import SwiftUI
 
-struct MapCard: View {
+struct MapCardView: View {
     @Binding var position: MapCameraPosition
     let manager: CLLocationManager
 
