@@ -4,4 +4,8 @@ struct Api {
     static var birdsEndpoint: String {
             return baseUrl + "birds"
     }
+    
+    static var birdLocationsEndpoint: String {
+        return baseUrl + "location"
+    }
 }
