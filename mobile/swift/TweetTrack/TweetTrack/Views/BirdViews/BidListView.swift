@@ -15,7 +15,9 @@ struct BirdListView: View {
             .padding()
         }
         .onAppear {
-            birdFetcher.fetchBirds()
+            Task{
+                await birdFetcher.fetchBirds()
+            }
         }
     }
 }
