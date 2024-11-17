@@ -26,17 +26,17 @@ final class VoiceRecorderService: ObservableObject {
         } catch {
             print("VoiceRecorderService: Failed to setUp AVAudioSession")
         }
-        
-        let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+
+        let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let audiofileName = "recording_\(Date().timeIntervalSince1970).m4a"
         let audioFileURL = documentPath.appendingPathComponent(audiofileName)
         
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-            AVSampleRateKey: 12000,
-            AVNumberOfChannelsKey: 1,
+            AVSampleRateKey: 44100.0,
+            AVNumberOfChannelsKey: 2,
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
-        ]
+        ] as [String: Any]
         
         do {
             audioRecorder = try AVAudioRecorder(url: audioFileURL, settings: settings)
@@ -75,7 +75,6 @@ final class VoiceRecorderService: ObservableObject {
             .sink { [weak self] _ in
                 guard let startTime = self?.startTime else { return }
                 self?.elaspedTime = Date().timeIntervalSince(startTime)
-                print("VoiceRecorderService: elapsedTime: \(String(describing: self?.elaspedTime))")
             }
     }
 }

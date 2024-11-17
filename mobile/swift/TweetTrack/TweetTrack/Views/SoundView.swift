@@ -27,24 +27,31 @@ struct SoundView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-
-            if let recordingURL = recordingURL {
-                Text("Recording saved at: \(recordingURL.lastPathComponent)")
-                Text("Duration: \(String(format: "%.1f", recordingDuration)) seconds")
-                
-                Button(action: {
-                    playRecording()
-                }) {
-                    Text("Play Recording")
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
-            }
-            List{
+            List {
                 ForEach(birdSounds) { sound in
-                    Text(sound.title)}
+                    HStack {
+                        Button(action: {
+                            context.delete(sound)
+                        }) {
+                            Image(systemName: "trash")
+                                .padding()
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Text(sound.title)
+                            .padding()
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
+                        }) {
+                            Image(systemName: "speaker.wave.2.circle")
+                                .padding()
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
             }
         }
         .padding()
@@ -60,20 +67,18 @@ struct SoundView: View {
             self.recordingDuration = duration
             
             if let url = url {
-                      let newBirdSoundItem = BirdSoundItem(
-                          title: "Bird Recording \(Date())",
-                          audioDataPath: url.path,
-                          duration: duration
-                      )
-                      context.insert(newBirdSoundItem)
-                  }
+                let newBirdSoundItem = BirdSoundItem(
+                    title: "Bird Recording \(Date())",
+                    audioDataPath: url.path,
+                    duration: duration
+                )
+                context.insert(newBirdSoundItem)
+            }
         }
     }
 
-    private func playRecording() {
-        if let url = recordingURL {
-            audioPlayer.playAudio(at: url)
-        }
+    private func playRecordingAtUrl(url: URL) {
+        audioPlayer.playAudio(at: url)
     }
 }
 
