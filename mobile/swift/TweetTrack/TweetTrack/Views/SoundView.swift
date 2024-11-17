@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import SwiftData
 
 struct SoundView: View {
     @StateObject private var voiceRecorder = VoiceRecorderService()
@@ -7,11 +8,12 @@ struct SoundView: View {
     
     @State private var recordingURL: URL?
     @State private var recordingDuration: TimeInterval = 0
+    
+    @Environment(\.modelContext) private var context
+    @Query private var birdSounds: [BirdSoundItem]
 
     var body: some View {
         VStack(spacing: 20) {
-            
-
             Button(action: {
                 if voiceRecorder.isRecording {
                     stopRecording()
@@ -40,6 +42,10 @@ struct SoundView: View {
                         .cornerRadius(8)
                 }
             }
+            List{
+                ForEach(birdSounds) { sound in
+                    Text(sound.title)}
+            }
         }
         .padding()
     }
@@ -52,6 +58,15 @@ struct SoundView: View {
         voiceRecorder.stopRecording { url, duration in
             self.recordingURL = url
             self.recordingDuration = duration
+            
+            if let url = url {
+                      let newBirdSoundItem = BirdSoundItem(
+                          title: "Bird Recording \(Date())",
+                          audioDataPath: url.path,
+                          duration: duration
+                      )
+                      context.insert(newBirdSoundItem)
+                  }
         }
     }
 

@@ -2,22 +2,18 @@ import Foundation
 import SwiftData
 
 @Model
-class BirdSoundItem: Identifiable {
-    var id = UUID()
+final class BirdSoundItem: Identifiable {
+    var id: UUID
     var title: String
     var audioDataPath: String
     var duration: Double
-    var dareCreated: Date
+    var dateCreated: Date
 
-    init(id: UUID = UUID(), title: String, audioDataPath: String, duration: Double, dareCreated: Date = Date()) {
-        self.id = id
+    init(title: String, audioDataPath: String, duration: Double, dateCreated: Date = Date()) {
+        self.id = UUID() 
         self.title = title
         self.audioDataPath = audioDataPath
         self.duration = duration
-        self.dareCreated = dareCreated
-    }
-
-    var audioDataUrl: URL {
-        URL(fileURLWithPath: audioDataPath)
+        self.dateCreated = dateCreated
     }
 }
