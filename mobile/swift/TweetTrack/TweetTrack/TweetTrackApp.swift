@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct TweetTrackApp: App {
@@ -6,5 +7,6 @@ struct TweetTrackApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: BirdSoundItem.self)
     }
 }

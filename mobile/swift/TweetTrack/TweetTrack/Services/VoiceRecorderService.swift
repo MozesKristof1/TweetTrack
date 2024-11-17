@@ -28,7 +28,7 @@ final class VoiceRecorderService: ObservableObject {
         }
         
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let audiofileName = "bird.m4a"
+        let audiofileName = "recording_\(Date().timeIntervalSince1970).m4a"
         let audioFileURL = documentPath.appendingPathComponent(audiofileName)
         
         let settings = [
