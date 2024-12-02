@@ -1,14 +1,14 @@
-import SwiftUI
 import AVFoundation
 import SwiftData
+import SwiftUI
 
 struct SoundView: View {
     @StateObject private var voiceRecorder = VoiceRecorderService()
     @StateObject private var audioPlayer = AudioPlayerService()
-    
+
     @State private var recordingURL: URL?
     @State private var recordingDuration: TimeInterval = 0
-    
+
     @Environment(\.modelContext) private var context
     @Query private var birdSounds: [BirdSoundItem]
 
@@ -27,7 +27,8 @@ struct SoundView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-            List {
+
+            ScrollView {
                 ForEach(birdSounds) { sound in
                     HStack {
                         Button(action: {
@@ -37,12 +38,12 @@ struct SoundView: View {
                                 .padding()
                         }
                         .buttonStyle(PlainButtonStyle())
-                        
+
                         Text(sound.title)
                             .padding()
-                        
+
                         Spacer()
-                        
+
                         Button(action: {
                             playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
                         }) {
@@ -51,6 +52,10 @@ struct SoundView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(radius: 1)
                 }
             }
         }
@@ -65,7 +70,7 @@ struct SoundView: View {
         voiceRecorder.stopRecording { url, duration in
             self.recordingURL = url
             self.recordingDuration = duration
-            
+
             if let url = url {
                 let newBirdSoundItem = BirdSoundItem(
                     title: "Bird Recording \(Date())",
