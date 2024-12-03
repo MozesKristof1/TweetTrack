@@ -55,7 +55,7 @@ async def get_location():
         BirdLocation(
             id=UUID("a73c9832-6af9-4e4a-9a59-320f4b3f1b57"),
             birdId=UUID("df2a3c52-bbe6-4b61-a032-8e3aff5d3dd0"),
-            latitude=51.5074,
+            latitude=51.5075,
             longitude=-0.1278
         ),
     ]

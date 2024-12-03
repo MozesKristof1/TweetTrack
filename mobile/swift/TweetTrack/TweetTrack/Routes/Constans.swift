@@ -1,5 +1,5 @@
 struct Api {
-    static let baseUrl = "http://127.0.0.1:8000/"
+    static let baseUrl = "https://tweet-track-h4mmeu8mi-kristofs-projects-43e78ed6.vercel.app/"
     
     static var birdsEndpoint: String {
             return baseUrl + "birds"
