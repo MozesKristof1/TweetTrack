@@ -99,3 +99,5 @@ build/
 *.lock
 *.log
 *.plist
+
+.vercel
