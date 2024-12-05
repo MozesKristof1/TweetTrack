@@ -1,8 +1,8 @@
 import Foundation
 
 struct BirdLocation : Codable, Identifiable {
-    let id = UUID()
-    let birdId = UUID()
+    var id = UUID()
+    var birdId = UUID()
     let latitude: Float
     let longitude: Float
 }
