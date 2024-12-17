@@ -2,7 +2,7 @@ import SwiftUI
 
 struct UserDetailView: View {
     var body: some View {
-        Text("UerDetailView will be implemented here")
+        Text("UserDetailView will be implemented here")
     }
 }
 
