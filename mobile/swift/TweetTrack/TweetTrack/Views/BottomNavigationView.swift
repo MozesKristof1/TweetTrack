@@ -11,7 +11,7 @@ struct BottomNavigationView: View {
             }
                 
             NavigationView {
-                SoundView()
+                SoundListView()
             }
             .tabItem {
                 Label("Sound Recognition", systemImage: "waveform")

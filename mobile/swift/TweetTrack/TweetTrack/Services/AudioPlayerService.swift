@@ -12,4 +12,8 @@ final class AudioPlayerService: ObservableObject {
             print("AudioPlayerService: Failed to play audio with error: \(error.localizedDescription)")
         }
     }
+    
+    func stopAudio() {
+        audioPlayer?.stop()
+    }
 }
