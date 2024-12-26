@@ -24,13 +24,18 @@ struct BirdCardView: View {
             VStack(alignment: .leading) {
                 Text(bird.name)
                     .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
                 Text(bird.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
             }
             .padding()
-            .lineSpacing(0.5)
         }
+        .frame(height: 120)
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
