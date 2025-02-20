@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from typing import List
 from uuid import UUID
 
-from src.models.bird import Bird
-from src.models.birdLocation import BirdLocation
+from models.bird import Bird
+from models.birdLocation import BirdLocation
 
 app = FastAPI()
 
