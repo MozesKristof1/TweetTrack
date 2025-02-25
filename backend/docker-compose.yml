@@ -33,5 +33,15 @@ services:
       timeout: 5s
       retries: 5
 
+  tflite-inference:
+    build: AiInference
+    container_name: tflite-inference
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./tflite_server/models:/app/models
+    environment:
+      - MODEL_PATH=/app/model.tflite
+
 volumes:
   postgres:
