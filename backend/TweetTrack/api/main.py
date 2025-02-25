@@ -1,16 +1,20 @@
 from fastapi import FastAPI
 from typing import List
 from uuid import UUID
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import text
+import os
 
 from models.bird import Bird
 from models.birdLocation import BirdLocation
 
 app = FastAPI()
 
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:tweetTrack@postgres:5432/tweettrack_db")
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @app.get("/birds", response_model=List[Bird])
@@ -60,3 +64,12 @@ async def get_location():
         ),
     ]
     return locations
+
+@app.get("/db-status")
+async def check_db_connection():
+    try:
+        with engine.connect() as connection:
+            result = connection.scalar(text("SELECT 1"))
+        return {"status": "Database connection is successful", "result": result}
+    except Exception as e:
+        return {"status": "Database connection failed", "error": str(e)}

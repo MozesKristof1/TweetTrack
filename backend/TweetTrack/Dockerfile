@@ -1,9 +1,9 @@
 FROM python:3.9
 
 # Copy the backend/TweetTrack directory contents into the container at /app
-COPY /api /app/
-COPY /src /app/
-
+COPY api /app/api/
+COPY src /app/src/
+COPY requirements.txt /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 WORKDIR /app/api
