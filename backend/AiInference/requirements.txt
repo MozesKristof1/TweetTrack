@@ -2,3 +2,7 @@ fastapi
 uvicorn
 numpy
 tensorflow
+matplotlib
+librosa
+numpy
+tensorflow_hub
