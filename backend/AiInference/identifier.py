@@ -40,10 +40,10 @@ def classify_bird(audio_path):
     label_logits = model_outputs['label'].numpy()[0]
     label_probs = tf.nn.softmax(label_logits).numpy()
 
+    # Shifting the indexing by 1
     top_1_index = np.argmax(label_probs) + 1 
 
-    print(f"\n🦜 **Best Predicted Bird**")
     bird_name = bird_labels.get(top_1_index, "Unknown Bird")
-    print(f"🦜 {bird_name} - probability: {label_probs[top_1_index]:.4f}")
+    print(f"🦜 {bird_name} - probability: {label_probs[top_1_index - 1]:.4f}")
 
 classify_bird("13 White-breasted Nuthatch Song.mp3")
