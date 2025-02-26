@@ -23,9 +23,12 @@ else:
 LABELS_PATH = "label.csv"
 bird_labels = load_labels(LABELS_PATH)
 
-def classify_bird(audio_path):
-    # Load and preprocess the audio
-    waveform, sr = librosa.load(audio_path, sr=32000, mono=True)
+def classify_bird(file):
+    # Read the audio file from the uploaded file object
+    audio_data = file.file.read()  # This reads the file content
+    
+    # Load audio directly from the file content in memory
+    waveform, sr = librosa.load(BytesIO(audio_data), sr=32000, mono=True)
 
     target_length = 5 * 32000
     if len(waveform) < target_length:
@@ -45,5 +48,3 @@ def classify_bird(audio_path):
 
     bird_name = bird_labels.get(top_1_index, "Unknown Bird")
     print(f"🦜 {bird_name} - probability: {label_probs[top_1_index - 1]:.4f}")
-
-classify_bird("13 White-breasted Nuthatch Song.mp3")

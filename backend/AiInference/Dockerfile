@@ -7,6 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-EXPOSE 8501
+EXPOSE 9000
 
-CMD ["python", "./identifier.py"]
+CMD ["python", "./socket_server.py"]

@@ -37,7 +37,7 @@ services:
     build: AiInference
     container_name: model-inference
     ports:
-      - "8501:8501"
+      - "9000:9000"
     environment:
       - MODEL_PATH=/app/model.saved
 
