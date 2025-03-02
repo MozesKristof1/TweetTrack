@@ -8,5 +8,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 EXPOSE 9000
-
-CMD ["python", "./socket_server.py"]
+CMD ["sh", "-c", "while true; do sleep 3600; done"]
+# CMD ["python", "./socket_server.py"]

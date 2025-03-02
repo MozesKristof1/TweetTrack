@@ -1,0 +1,55 @@
+import socket
+from io import BytesIO
+
+from identifier import classify_bird
+
+HOST = "0.0.0.0"    
+PORT = 9000
+
+print(f"🎙 AI Service ")
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((HOST, PORT))
+    server_socket.listen(5)
+
+    print(f"🎙 AI Service listening on {HOST}:{PORT}")
+
+    while True:
+        client_socket, addr = server_socket.accept()
+        print(f"🔗 Connection from {addr}")
+
+        data_size_bytes = client_socket.recv(10)
+        if not data_size_bytes:
+            print("No size received!")
+            client_socket.close()
+            continue
+
+        data_size = int(data_size_bytes.decode().strip())
+        print(f"Expecting {data_size} bytes")
+
+        audio_data = b""
+        while len(audio_data) < data_size:
+            chunk = client_socket.recv(min(4096, data_size - len(audio_data)))
+            if not chunk:
+                break
+            audio_data += chunk
+            print(f"📦 Received {len(chunk)} bytes (Total: {len(audio_data)}/{data_size})")
+
+        print(f"Finished receiving {len(audio_data)} bytes")
+
+        if len(audio_data) == data_size:
+            print("✅ Data fully received!")
+        else:
+            print(f"Data incomplete! Received {len(audio_data)} bytes out of {data_size}")
+
+        # result = classify_bird(audio_data)
+        bird_name = "TesztFecske"
+        confidence = 0.95 
+
+        result =  f"{bird_name}|{confidence}"
+        
+        client_socket.sendall(result.encode())
+        client_socket.close()
+
+
+start_server()
