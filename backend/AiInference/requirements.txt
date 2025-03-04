@@ -6,3 +6,5 @@ matplotlib
 librosa
 numpy
 tensorflow_hub
+pydub
+ffmpeg-python

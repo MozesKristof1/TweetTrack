@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import tensorflow as tf
 import numpy as np
 import librosa
@@ -23,11 +25,8 @@ else:
 LABELS_PATH = "label.csv"
 bird_labels = load_labels(LABELS_PATH)
 
-def classify_bird(file):
-    # Read the audio file from the uploaded file object
-    audio_data = file.file.read()  # This reads the file content
-    
-    # Load audio directly from the file content in memory
+def classify_bird(audio_data):
+    # Load audio directly from raw bytes
     waveform, sr = librosa.load(BytesIO(audio_data), sr=32000, mono=True)
 
     target_length = 5 * 32000
@@ -48,3 +47,4 @@ def classify_bird(file):
 
     bird_name = bird_labels.get(top_1_index, "Unknown Bird")
     print(f"🦜 {bird_name} - probability: {label_probs[top_1_index - 1]:.4f}")
+    return f"{bird_name} {label_probs[top_1_index - 1]:.4f}"

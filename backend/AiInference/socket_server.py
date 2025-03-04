@@ -1,12 +1,12 @@
 import socket
 from io import BytesIO
+from pydub import AudioSegment
 
 from identifier import classify_bird
 
 HOST = "0.0.0.0"    
 PORT = 9000
 
-print(f"🎙 AI Service ")
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))
@@ -42,14 +42,22 @@ def start_server():
         else:
             print(f"Data incomplete! Received {len(audio_data)} bytes out of {data_size}")
 
-        # result = classify_bird(audio_data)
-        bird_name = "TesztFecske"
-        confidence = 0.95 
-
-        result =  f"{bird_name}|{confidence}"
+        result = classify_bird(convert_bytes_to_WAV(audio_data))
         
         client_socket.sendall(result.encode())
         client_socket.close()
+
+def convert_bytes_to_WAV(audio_data):
+    audio_file = BytesIO(audio_data)
+    
+    audio = AudioSegment.from_mp3(audio_file)
+
+    output = BytesIO()
+    audio.export(output, format="wav")
+    output.seek(0)
+
+    # Return raw WAV data
+    return output.read() 
 
 
 start_server()

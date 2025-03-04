@@ -26,6 +26,6 @@ async def upload_sound_file(file: UploadFile = File(...)):
     response = client_socket.recv(1024).decode()
     client_socket.close()
 
-    bird_name, confidence = response.split("|")
+    bird_name = response
 
-    return {"bird": bird_name, "confidence": float(confidence)}
+    return {"bird and probability": bird_name}
