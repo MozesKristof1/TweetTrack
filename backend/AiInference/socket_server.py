@@ -47,17 +47,18 @@ def start_server():
         client_socket.sendall(result.encode())
         client_socket.close()
 
-def convert_bytes_to_WAV(audio_data):
+
+def convert_bytes_to_MP3(audio_data):
     audio_file = BytesIO(audio_data)
-    
+
     audio = AudioSegment.from_mp3(audio_file)
 
     output = BytesIO()
-    audio.export(output, format="wav")
+    audio.export(output, format="mp3")
     output.seek(0)
 
-    # Return raw WAV data
-    return output.read() 
+    # Return MP3 data
+    return output.read()
 
 
 start_server()
