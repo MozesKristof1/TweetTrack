@@ -42,7 +42,7 @@ def start_server():
         else:
             print(f"Data incomplete! Received {len(audio_data)} bytes out of {data_size}")
 
-        result = classify_bird(convert_bytes_to_WAV(audio_data))
+        result = classify_bird(convert_bytes_to_MP3(audio_data))
         
         client_socket.sendall(result.encode())
         client_socket.close()

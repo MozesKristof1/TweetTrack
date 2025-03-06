@@ -8,13 +8,16 @@ AI_PORT = 9000
 
 @router.post("/upload-sound/")
 async def upload_sound_file(file: UploadFile = File(...)):
-    
-
+     
     audio_bytes = await file.read()
     data_size = len(audio_bytes)
     
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((AI_HOST, AI_PORT))
+
+    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
+    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
+
     print("📡 sending")
 
     # send audio file size
