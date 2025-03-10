@@ -1,5 +1,6 @@
 import socket
 from fastapi import APIRouter, UploadFile, File
+import asyncio
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ async def upload_sound_file(file: UploadFile = File(...)):
     client_socket.sendall(f"{data_size:010}".encode())
 
     # send audio in bytes
-    client_socket.sendall(audio_bytes)
+    await send_data(client_socket, audio_bytes)
 
     response = client_socket.recv(1024).decode()
     client_socket.close()
@@ -32,3 +33,7 @@ async def upload_sound_file(file: UploadFile = File(...)):
     bird_name = response
 
     return {"bird and probability": bird_name}
+
+async def send_data(client_socket, data):
+    loop = asyncio.get_running_loop()
+    await loop.sock_sendall(client_socket, data)
