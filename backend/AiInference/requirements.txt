@@ -8,3 +8,5 @@ numpy
 tensorflow_hub
 pydub
 ffmpeg-python
+requests
+beautifulsoup4

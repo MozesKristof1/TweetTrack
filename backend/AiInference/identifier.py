@@ -36,7 +36,9 @@ def classify_bird(audio_data):
         waveform = waveform[:target_length]
 
     # Run inference
-    model_outputs = model.infer_tf(waveform[np.newaxis, :])
+    waveform_batch = np.expand_dims(waveform, axis=0)
+    # model_outputs = model.infer_tf(waveform[np.newaxis, :])
+    model_outputs = model.infer_tf(waveform_batch)
 
     # Extract raw logits
     label_logits = model_outputs['label'].numpy()[0]
@@ -47,4 +49,5 @@ def classify_bird(audio_data):
 
     bird_name = bird_labels.get(top_1_index, "Unknown Bird")
     print(f"🦜 {bird_name} - probability: {label_probs[top_1_index - 1]:.4f}")
-    return f"{bird_name} {label_probs[top_1_index - 1]:.4f}"
+    return bird_name, label_probs[top_1_index - 1]
+
