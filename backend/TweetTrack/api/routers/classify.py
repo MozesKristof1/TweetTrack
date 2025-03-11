@@ -27,7 +27,7 @@ async def upload_sound_file(file: UploadFile = File(...)):
     # send audio in bytes
     await send_data(client_socket, audio_bytes)
 
-    response = client_socket.recv(1024).decode()
+    response = client_socket.recv(1024).decode("utf-8")
     client_socket.close()
 
     bird_name = response
