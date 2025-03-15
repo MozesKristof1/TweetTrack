@@ -48,6 +48,9 @@ def start_server():
         scraped_bird = scrape_ebird_species(result[0])
         print(scraped_bird)
 
+        # Add probability to the scraped bird
+        scraped_bird['probability'] = float(result[1])
+
         scraped_bird_json = json.dumps(scraped_bird)
 
         # Send identified bird back
