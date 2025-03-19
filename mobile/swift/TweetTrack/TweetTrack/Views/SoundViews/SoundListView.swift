@@ -2,7 +2,7 @@ import AVFoundation
 import SwiftData
 import SwiftUI
 
-struct SoundView: View {
+struct SoundListView: View {
     @StateObject private var voiceRecorder = VoiceRecorderService()
     @StateObject private var audioPlayer = AudioPlayerService()
 
@@ -30,32 +30,22 @@ struct SoundView: View {
 
             ScrollView {
                 ForEach(birdSounds) { sound in
-                    HStack {
-                        Button(action: {
-                            context.delete(sound)
-                        }) {
-                            Image(systemName: "trash")
-                                .padding()
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        Text(sound.title)
-                            .padding()
-
-                        Spacer()
-
-                        Button(action: {
-                            playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
-                        }) {
-                            Image(systemName: "speaker.wave.2.circle")
-                                .padding()
-                        }
-                        .buttonStyle(PlainButtonStyle())
+                    NavigationLink(destination: SoundDetailView(sound: sound)) {
+                        SoundCardView(
+                            sound: sound,
+                            onDelete: {
+                                context.delete(sound)
+                            },
+                            onPlay: {
+                                playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
+                            },
+                            onStop: {
+                                audioPlayer.stopAudio()
+                            }
+                        )
                     }
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .cornerRadius(12)
-                    .shadow(radius: 1)
+                    .contentShape(Rectangle())
+                    .padding(.vertical, 4)
                 }
             }
         }
@@ -88,5 +78,5 @@ struct SoundView: View {
 }
 
 #Preview {
-    SoundView()
+    SoundListView()
 }
