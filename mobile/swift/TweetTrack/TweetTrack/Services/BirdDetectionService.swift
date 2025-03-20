@@ -24,11 +24,14 @@ final class BirdDetectionService: ObservableObject {
             
             // Perform prediction with the model
             let prediction = try model.prediction(audioSamples: audioMultiArray)
-            
             print(prediction.targetProbability)
 
-         
-            return "Bird could not be identified"
+            if (prediction.targetProbability["hasbird"] ?? 0.0) > 0.7 {
+                return "Bird detected"
+            }
+            
+            return "No bird detected"
+            
         } catch {
             return "Error processing audio: \(error.localizedDescription)"
         }
