@@ -5,6 +5,7 @@ import SwiftUI
 struct SoundListView: View {
     @StateObject private var voiceRecorder = VoiceRecorderService()
     @StateObject private var audioPlayer = AudioPlayerService()
+    @StateObject private var detectionService = BirdDetectionService()!
 
     @State private var recordingURL: URL?
     @State private var recordingDuration: TimeInterval = 0
@@ -30,7 +31,7 @@ struct SoundListView: View {
 
             ScrollView {
                 ForEach(birdSounds) { sound in
-                    NavigationLink(destination: SoundDetailView(sound: sound)) {
+                    NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService)) {
                         SoundCardView(
                             sound: sound,
                             onDelete: {
@@ -48,8 +49,8 @@ struct SoundListView: View {
                     .padding(.vertical, 4)
                 }
             }
+            .padding()
         }
-        .padding()
     }
 
     private func startRecording() {

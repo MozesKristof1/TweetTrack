@@ -34,7 +34,7 @@ final class VoiceRecorderService: ObservableObject {
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 44100.0,
-            AVNumberOfChannelsKey: 2,
+            AVNumberOfChannelsKey: 1,
             AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
         ] as [String: Any]
         
