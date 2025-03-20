@@ -5,6 +5,6 @@ struct SoundDetailView: View {
     let detectionService: BirdDetectionService
     var body: some View {
         Text(sound.title)
-        Text(detectionService.identifyBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath)))
+        Text(detectionService.detectBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath)))
     }
 }
