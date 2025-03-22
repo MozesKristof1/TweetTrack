@@ -1,5 +1,10 @@
 FROM python:3.9
 
+RUN apt-get update && \
+    apt-get install -y ffmpeg && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy the backend/TweetTrack directory contents into the container at /app
 COPY api /app/api/
 COPY src /app/src/

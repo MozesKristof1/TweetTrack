@@ -1,7 +1,11 @@
+from fastapi import APIRouter, UploadFile, File
+from pydub import AudioSegment
 import json
 import socket
-from fastapi import APIRouter, UploadFile, File
 import asyncio
+import tempfile
+import os
+import io
 
 router = APIRouter()
 
@@ -11,30 +15,54 @@ AI_PORT = 9000
 
 @router.post("/upload-sound/")
 async def upload_sound_file(file: UploadFile = File(...)):
-    audio_bytes = await file.read()
-    data_size = len(audio_bytes)
+    try:
+        audio_bytes = await file.read()
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((AI_HOST, AI_PORT))
+        if file.filename.lower().endswith('.m4a'):
 
-    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
-    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".m4a") as temp_file:
+                temp_file.write(audio_bytes)
+                temp_path = temp_file.name
 
-    print("📡 sending")
+            try:
+                audio = AudioSegment.from_file(temp_path, format="m4a")
 
-    # send audio file size
-    client_socket.sendall(f"{data_size:010}".encode())
+                mp3_buffer = io.BytesIO()
+                audio.export(mp3_buffer, format="mp3")
+                mp3_buffer.seek(0)
 
-    # send audio in bytes
-    await send_data(client_socket, audio_bytes)
+                audio_bytes = mp3_buffer.read()
 
-    response = client_socket.recv(1024).decode("utf-8")
-    client_socket.close()
+            except Exception as e:
+                print(f"❌ Conversion error: {str(e)}")
+                raise
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
 
-    bird_data = json.loads(response)
+        data_size = len(audio_bytes)
 
-    return bird_data
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((AI_HOST, AI_PORT))
 
+        client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
+        client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
+
+        print("📡 sending")
+
+        client_socket.sendall(f"{data_size:010}".encode())
+
+        await send_data(client_socket, audio_bytes)
+
+        response = client_socket.recv(1024).decode("utf-8")
+        client_socket.close()
+
+        bird_data = json.loads(response)
+
+        return bird_data
+
+    except Exception as e:
+        return {"error": str(e), "detail": "Failed to process audio file"}
 
 async def send_data(client_socket, data):
     loop = asyncio.get_running_loop()
