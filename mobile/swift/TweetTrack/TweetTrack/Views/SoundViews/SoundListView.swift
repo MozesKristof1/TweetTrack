@@ -6,6 +6,7 @@ struct SoundListView: View {
     @StateObject private var voiceRecorder = VoiceRecorderService()
     @StateObject private var audioPlayer = AudioPlayerService()
     @StateObject private var detectionService = BirdDetectionService()!
+    @StateObject private var postService = AudioUploadService()
 
     @State private var recordingURL: URL?
     @State private var recordingDuration: TimeInterval = 0
@@ -31,7 +32,7 @@ struct SoundListView: View {
 
             ScrollView {
                 ForEach(birdSounds) { sound in
-                    NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService)) {
+                    NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService, postService: postService)) {
                         SoundCardView(
                             sound: sound,
                             onDelete: {

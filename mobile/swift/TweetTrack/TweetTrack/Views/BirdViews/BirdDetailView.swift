@@ -4,66 +4,64 @@ import SwiftUI
 struct BirdDetailView: View {
     var bird: Bird
     let manager = CLLocationManager()
-    @State private var position: MapCameraPosition =
-        .userLocation(fallback: .automatic)
+    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     @StateObject var birdLocationFetcher = BirdLocationFetcher()
     
     var body: some View {
-        ZStack {
-            VStack {
-                ScrollView {
-                    VStack {
-                        HStack {
-                            Text(bird.name)
-                                .font(.largeTitle)
-                                .padding()
-                            Button(action: {
-                                print("Sound button pressed")
-                            }) {
-                                Image(systemName: "speaker.wave.2.circle")
-                                    .resizable()
-                                    .frame(width: 30, height: 30)
-                                    .padding()
-                                    .background(Color.white.opacity(0.7))
-                                    .clipShape(Circle())
-                                    .shadow(radius: 5)
-                            }
-                        }
-                        
-                        Text(bird.description)
-                            .font(.body)
-                            .padding()
-                        
+        VStack(spacing: 20) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text(bird.name)
+                            .font(.largeTitle.bold())
+                            .foregroundColor(.primary)
                         Spacer()
-                        MapCardView(birdLocations: $birdLocationFetcher.birdLocation, position: $position, manager: manager)
-                    }
-                    .padding()
-                    .onAppear {
-                        Task {
-                            await birdLocationFetcher.birdLocationFetcher()
+                        ThemedButton(systemName: "speaker.wave.2.circle") {
+                            print("Sound button pressed")
                         }
                     }
+                    .padding(.horizontal)
+                    
+                    Text(bird.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+                    
+                    MapCardView(birdLocations: $birdLocationFetcher.birdLocation, position: $position, manager: manager)
+                        .cornerRadius(12)
+                        .shadow(radius: 5)
+                        .padding()
                 }
             }
             
-            VStack {
+            HStack {
                 Spacer()
-                HStack {                    
-                    Button(action: {
-                        print("Add button pressed")
-                    }) {
-                        Image(systemName: "plus.app.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
+                ThemedButton(systemName: "plus.app.fill") {
+                    print("Add button pressed")
                 }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 20)
             }
+            .padding(.trailing, 20)
+            .padding(.bottom, 20)
+        }
+        .task {
+            await birdLocationFetcher.birdLocationFetcher()
+        }
+    }
+}
+
+struct ThemedButton: View {
+    let systemName: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .resizable()
+                .frame(width: 30, height: 30)
+                .padding()
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+                .shadow(radius: 5)
         }
     }
 }

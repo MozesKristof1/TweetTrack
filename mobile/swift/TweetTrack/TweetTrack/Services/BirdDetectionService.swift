@@ -18,7 +18,7 @@ final class BirdDetectionService: ObservableObject {
         }
     }
     
-    func identifyBirdSound(audioURL: URL) -> String {
+    func detectBirdSound(audioURL: URL) -> String {
         do {
             let audioMultiArray = try convertAudioToMLMultiArray(audioURL: audioURL)
             

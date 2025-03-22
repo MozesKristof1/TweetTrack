@@ -9,3 +9,11 @@ struct Api {
         return baseUrl + "location"
     }
 }
+struct Localhost {
+    static let baseUrl = "http://localhost:8000/"
+    
+    static var identifyBird: String {
+            return baseUrl + "upload-sound"
+    }
+
+}

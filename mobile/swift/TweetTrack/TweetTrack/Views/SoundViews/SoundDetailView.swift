@@ -3,11 +3,13 @@ import SwiftUI
 struct SoundDetailView: View {
     let sound: BirdSoundItem
     let detectionService: BirdDetectionService
+    let postService: AudioUploadService
     private let detectionResult: String
 
-    init(sound: BirdSoundItem, detectionService: BirdDetectionService) {
+    init(sound: BirdSoundItem, detectionService: BirdDetectionService, postService: AudioUploadService) {
         self.sound = sound
         self.detectionService = detectionService
+        self.postService = postService
         self.detectionResult = detectionService.detectBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath))
     }
 
@@ -24,7 +26,15 @@ struct SoundDetailView: View {
                 .padding()
 
             Button(action: {
-                // Call post requesr for identification
+                let fileURL = URL(fileURLWithPath: sound.audioDataPath)
+                postService.uploadSoundFile(fileURL: fileURL) { result in
+                    switch result {
+                    case .success(let data):
+                        print("Upload successful! Response: \(String(decoding: data, as: UTF8.self))")
+                    case .failure(let error):
+                        print("Upload failed: \(error.localizedDescription)")
+                    }
+                }
             }) {
                 Text("Identify the Bird")
                     .font(.headline)
