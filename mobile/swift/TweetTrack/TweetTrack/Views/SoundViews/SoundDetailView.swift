@@ -10,9 +10,12 @@ struct SoundDetailView: View {
         self.sound = sound
         self.detectionService = detectionService
         self.postService = postService
-        self.detectionResult = detectionService.detectBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath))
+        self.detectionResult = detectionService.detectBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath)).0
+        if detectionResult == "Bird detected" {
+            sound.detectedBird = true
+        }
     }
-
+    
     var body: some View {
         VStack(spacing: 20) {
             Text(sound.title)
