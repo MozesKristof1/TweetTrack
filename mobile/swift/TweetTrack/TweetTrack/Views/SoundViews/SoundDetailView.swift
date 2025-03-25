@@ -22,7 +22,7 @@ struct SoundDetailView: View {
                 .font(.title)
                 .fontWeight(.bold)
                 .padding()
-
+            
             Text(detectionResult)
                 .font(.headline)
                 .foregroundColor(.gray)

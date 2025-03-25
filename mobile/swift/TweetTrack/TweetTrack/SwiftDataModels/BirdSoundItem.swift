@@ -8,9 +8,10 @@ final class BirdSoundItem: Identifiable {
     var audioDataPath: String
     var duration: Double
     var dateCreated: Date
-
+    var detectedBird: Bool = false
+    
     init(title: String, audioDataPath: String, duration: Double, dateCreated: Date = Date()) {
-        self.id = UUID() 
+        self.id = UUID()
         self.title = title
         self.audioDataPath = audioDataPath
         self.duration = duration
