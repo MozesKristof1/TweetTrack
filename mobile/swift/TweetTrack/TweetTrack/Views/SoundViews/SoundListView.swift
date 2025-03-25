@@ -32,19 +32,30 @@ struct SoundListView: View {
 
             ScrollView {
                 ForEach(birdSounds) { sound in
-                    NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService, postService: postService)) {
-                        SoundCardView(
-                            sound: sound,
-                            onDelete: {
-                                context.delete(sound)
-                            },
-                            onPlay: {
-                                playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
-                            },
-                            onStop: {
-                                audioPlayer.stopAudio()
+                    Group {
+                        if checkIfPathExists(path: sound.audioDataPath) {
+                            NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService, postService: postService)) {
+                                SoundCardView(
+                                    sound: sound,
+                                    onDelete: {
+                                        context.delete(sound)
+                                    },
+                                    onPlay: {
+                                        playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
+                                    },
+                                    onStop: {
+                                        audioPlayer.stopAudio()
+                                    }
+                                )
                             }
-                        )
+                        } else {
+                            // Use this text to delete non existing sound items
+                            Text("Audio file not found")
+                                .hidden()
+                                .onAppear {
+                                    context.delete(sound)
+                                }
+                        }
                     }
                     .contentShape(Rectangle())
                     .padding(.vertical, 4)
@@ -76,6 +87,10 @@ struct SoundListView: View {
 
     private func playRecordingAtUrl(url: URL) {
         audioPlayer.playAudio(at: url)
+    }
+
+    private func checkIfPathExists(path: String) -> Bool {
+        return FileManager.default.fileExists(atPath: path)
     }
 }
 
