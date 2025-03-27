@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 class BirdFetcher: ObservableObject {
     @Published var birds: [Bird] = []
 
