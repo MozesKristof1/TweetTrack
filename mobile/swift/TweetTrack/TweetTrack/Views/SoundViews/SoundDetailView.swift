@@ -49,70 +49,77 @@ struct SoundDetailView: View {
                     .padding(.horizontal, 20)
                 }
                 
-                if let birdName = sound.birdName {
-                    VStack(alignment: .leading, spacing: 15) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(birdName)
-                                    .font(.title2)
-                                    .fontWeight(.bold)
+                if sound.confidence != nil && sound.confidence! < 0.7 {
+                    Text("Couldn't identify the bird due to low confidence score.")
+                        .foregroundColor(.orange)
+                        .padding()
+                        .background(Color.orange.opacity(0.15))
+                        .cornerRadius(8)
+                } else {
+                    if let birdName = sound.birdName {
+                        VStack(alignment: .leading, spacing: 15) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(birdName)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    
+                                    if let scientificName = sound.scientificName {
+                                        Text(scientificName)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
                                 
-                                if let scientificName = sound.scientificName {
-                                    Text(scientificName)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                Spacer()
+                                
+                                if let confidence = sound.confidence {
+                                    Text(String(format: "Confidence: %.2f%%", confidence * 100))
+                                        .font(.caption)
+                                        .padding(8)
+                                        .background(Color.blue.opacity(0.1))
+                                        .cornerRadius(8)
                                 }
                             }
                             
-                            Spacer()
+                            if let description = sound.birdDescription {
+                                Text("Description:")
+                                    .font(.headline)
+                                
+                                Text(description)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
                             
-                            if let confidence = sound.confidence {
-                                Text(String(format: "Confidence: %.2f%%", confidence * 100))
-                                    .font(.caption)
-                                    .padding(8)
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(8)
+                            if let imageUrl = sound.imageUrl {
+                                AsyncImage(url: URL(string: imageUrl)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .cornerRadius(10)
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(height: 200)
                             }
                         }
-                        
-                        if let description = sound.birdDescription {
-                            Text("Description:")
-                                .font(.headline)
-                            
-                            Text(description)
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        if let imageUrl = sound.imageUrl {
-                            AsyncImage(url: URL(string: imageUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .cornerRadius(10)
-                            } placeholder: {
-                                ProgressView()
-                            }
-                            .frame(height: 200)
-                        }
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(15)
-                    .padding(.horizontal)
-                }
-                
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
                         .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(15)
+                        .padding(.horizontal)
+                    }
+                    
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding()
+                    }
                 }
             }
+            .padding()
         }
-        .padding()
     }
 
-    
     private func identifyBird() {
         isIdentifying = true
         errorMessage = nil
@@ -149,32 +156,31 @@ struct SoundDetailView: View {
     }
     
     private func parseBirdIdentification(_ data: Data) throws -> (String, String, String, String, Double) {
-           struct BirdIdentification: Codable {
-               let commonName: String
-               let scientificName: String
-               let identificationText: String
-               let imageUrl: String
-               let probability: Double
+        struct BirdIdentification: Codable {
+            let commonName: String
+            let scientificName: String
+            let identificationText: String
+            let imageUrl: String
+            let probability: Double
                
-               enum CodingKeys: String, CodingKey {
-                   case commonName = "common_name"
-                   case scientificName = "scientific_name"
-                   case identificationText = "identification_text"
-                   case imageUrl = "image_url"
-                   case probability
-               }
-           }
+            enum CodingKeys: String, CodingKey {
+                case commonName = "common_name"
+                case scientificName = "scientific_name"
+                case identificationText = "identification_text"
+                case imageUrl = "image_url"
+                case probability
+            }
+        }
            
-           let decoder = JSONDecoder()
-           let identification = try decoder.decode(BirdIdentification.self, from: data)
+        let decoder = JSONDecoder()
+        let identification = try decoder.decode(BirdIdentification.self, from: data)
            
-           return (
-               identification.commonName,
-               identification.scientificName,
-               identification.identificationText,
-               identification.imageUrl,
-               identification.probability
-           )
-       }
-    
+        return (
+            identification.commonName,
+            identification.scientificName,
+            identification.identificationText,
+            identification.imageUrl,
+            identification.probability
+        )
+    }
 }
