@@ -2,13 +2,12 @@ import SwiftUI
 
 struct BirdCardView: View {
     let bird: Bird
-
+    @State private var image: UIImage? = nil
+    
     var body: some View {
         HStack {
-            if let data = Data(base64Encoded: bird.base64Picture, options: .ignoreUnknownCharacters),
-               let uiImage = UIImage(data: data)
-            {
-                Image(uiImage: uiImage)
+            if let image = image {
+                Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 100, height: 100)
@@ -40,5 +39,20 @@ struct BirdCardView: View {
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(radius: 4)
+        .onAppear {
+            loadImage()
+        }
+    }
+    
+    private func loadImage() {
+        guard let url = URL(string: bird.base64Picture) else { return }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data, let downloadedImage = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    self.image = downloadedImage
+                }
+            }
+        }.resume()
     }
 }

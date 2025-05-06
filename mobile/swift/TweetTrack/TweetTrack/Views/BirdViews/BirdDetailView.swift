@@ -34,14 +34,14 @@ struct BirdDetailView: View {
                 }
             }
             
-            HStack {
-                Spacer()
-                ThemedButton(systemName: "plus.app.fill") {
-                    print("Add button pressed")
-                }
-            }
-            .padding(.trailing, 20)
-            .padding(.bottom, 20)
+//            HStack {
+//                Spacer()
+//                ThemedButton(systemName: "plus.app.fill") {
+//                    print("Add button pressed")
+//                }
+//            }
+//            .padding(.trailing, 20)
+//            .padding(.bottom, 20)
         }
         .task {
             await birdLocationFetcher.birdLocationFetcher()
