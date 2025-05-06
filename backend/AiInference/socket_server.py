@@ -2,7 +2,7 @@ import json
 import socket
 from io import BytesIO
 from pydub import AudioSegment
-from web_scraping.ebird_scraper import scrape_ebird_species
+from web_scraping.ebird_scraper import scrape_ebird_species, get_species_info
 from identifier import classify_bird
 
 HOST = "0.0.0.0"    
@@ -45,7 +45,7 @@ def start_server():
 
         result = classify_bird(convert_bytes_to_MP3(audio_data))
 
-        scraped_bird = scrape_ebird_species(result[0])
+        scraped_bird = get_species_info(result[0])
         print(scraped_bird)
 
         # Add probability to the scraped bird

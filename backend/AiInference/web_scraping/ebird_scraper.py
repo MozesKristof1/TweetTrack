@@ -1,3 +1,5 @@
+import json
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -39,3 +41,15 @@ def scrape_ebird_species(ebird_species_id):
         'identification_text': identification_text,
         'image_url': image_url
     }
+
+def get_species_info(ebird_species_id, json_path='bird_data.json'):
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            species_data = json.load(f)
+    except FileNotFoundError:
+        species_data = {}
+
+    if ebird_species_id in species_data:
+        return species_data[ebird_species_id]
+    else:
+        return scrape_ebird_species(ebird_species_id)

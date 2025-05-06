@@ -30,6 +30,11 @@ struct SoundDetailView: View {
                     .fontWeight(.bold)
                     .padding()
                 
+                // Updated AudioWaveformView with playback
+                AudioWaveformView(audioURL: URL(fileURLWithPath: sound.audioDataPath))
+                    .frame(height: 150)
+                    .padding(.horizontal)
+                
                 Text(detectionResult)
                     .font(.headline)
                     .foregroundColor(.gray)
@@ -49,7 +54,7 @@ struct SoundDetailView: View {
                     .padding(.horizontal, 20)
                 }
                 
-                if sound.confidence != nil && sound.confidence! < 0.7 {
+                if sound.confidence != nil && sound.confidence! == 0.7 {
                     Text("Couldn't identify the bird due to low confidence score.")
                         .foregroundColor(.orange)
                         .padding()
@@ -72,14 +77,6 @@ struct SoundDetailView: View {
                                 }
                                 
                                 Spacer()
-                                
-                                if let confidence = sound.confidence {
-                                    Text(String(format: "Confidence: %.2f%%", confidence * 100))
-                                        .font(.caption)
-                                        .padding(8)
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(8)
-                                }
                             }
                             
                             if let description = sound.birdDescription {

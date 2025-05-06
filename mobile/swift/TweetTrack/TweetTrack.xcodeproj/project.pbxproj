@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6D4487202D8C53C90088E578 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D44871F2D8C53C90088E578 /* AudioKit */; };
+		6DA6C48F2D9C0ECD002595C7 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6DA6C48E2D9C0ECD002595C7 /* AudioKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D4487202D8C53C90088E578 /* AudioKit in Frameworks */,
+				6DA6C48F2D9C0ECD002595C7 /* AudioKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,12 +77,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6DA6C48D2D9C0ECD002595C7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		6DCC11912CD10CD2000D0D11 = {
 			isa = PBXGroup;
 			children = (
 				6DCC119C2CD10CD2000D0D11 /* TweetTrack */,
 				6DCC11AD2CD10CD3000D0D11 /* TweetTrackTests */,
 				6DCC11B72CD10CD3000D0D11 /* TweetTrackUITests */,
+				6DA6C48D2D9C0ECD002595C7 /* Frameworks */,
 				6DCC119B2CD10CD2000D0D11 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -117,7 +125,7 @@
 			);
 			name = TweetTrack;
 			packageProductDependencies = (
-				6D44871F2D8C53C90088E578 /* AudioKit */,
+				6DA6C48E2D9C0ECD002595C7 /* AudioKit */,
 			);
 			productName = TweetTrack;
 			productReference = 6DCC119A2CD10CD2000D0D11 /* TweetTrack.app */;
@@ -202,7 +210,7 @@
 			mainGroup = 6DCC11912CD10CD2000D0D11;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				6D44871E2D8C53C90088E578 /* XCRemoteSwiftPackageReference "AudioKit" */,
+				6DA6C4482D9C0D35002595C7 /* XCRemoteSwiftPackageReference "AudioKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6DCC119B2CD10CD2000D0D11 /* Products */;
@@ -575,7 +583,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		6D44871E2D8C53C90088E578 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
+		6DA6C4482D9C0D35002595C7 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AudioKit/AudioKit.git";
 			requirement = {
@@ -586,9 +594,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6D44871F2D8C53C90088E578 /* AudioKit */ = {
+		6DA6C48E2D9C0ECD002595C7 /* AudioKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 6D44871E2D8C53C90088E578 /* XCRemoteSwiftPackageReference "AudioKit" */;
+			package = 6DA6C4482D9C0D35002595C7 /* XCRemoteSwiftPackageReference "AudioKit" */;
 			productName = AudioKit;
 		};
 /* End XCSwiftPackageProductDependency section */

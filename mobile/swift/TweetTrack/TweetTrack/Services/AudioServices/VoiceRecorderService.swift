@@ -2,6 +2,10 @@ import AVFoundation
 import Combine
 import Foundation
 
+import os.log
+
+let logger = Logger(subsystem: "TweetTrack.logs", category: "Audio")
+
 final class VoiceRecorderService: ObservableObject {
     private var audioRecorder: AVAudioRecorder?
     @Published private(set) var isRecording = false
@@ -22,9 +26,9 @@ final class VoiceRecorderService: ObservableObject {
             try audioSession.setCategory(.playAndRecord, mode: .default)
             try audioSession.overrideOutputAudioPort(.speaker)
             try audioSession.setActive(true)
-            print("VoiceRecorderService: successfully setUp AVAudioSession")
+            logger.info("Audio session successfully configured for recording and playback")
         } catch {
-            print("VoiceRecorderService: Failed to setUp AVAudioSession")
+            logger.error("Error configuring audio session: \(error.localizedDescription)")
         }
 
         let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!

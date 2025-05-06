@@ -6,3 +6,7 @@ psycopg2-binary
 python-multipart
 asyncio
 pydub
+librosa
+scipy
+soundfile
+numpy
