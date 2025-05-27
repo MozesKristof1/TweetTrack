@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from db import get_db
-from models.bird import BirdDTO
+from models.birdDTO import BirdDTO
 from tables import Bird
 
 router = APIRouter()

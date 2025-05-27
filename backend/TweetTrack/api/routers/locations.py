@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from typing import List
 from uuid import UUID
 
-from models.birdLocation import BirdLocationDTO
+from models.birdLocationDTO import BirdLocationDTO
 
 router = APIRouter()
 
