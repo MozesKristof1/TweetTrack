@@ -1,11 +1,11 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from routers import birds, locations, classify
-from db import engine
-from tables import Base
+
+from routers import birds, locations, classify, auth
+
 
 app = FastAPI()
 
 app.include_router(birds.router)
 app.include_router(locations.router)
 app.include_router(classify.router)
+app.include_router(auth.router)

@@ -12,9 +12,7 @@ COPY src /app/src/
 COPY start.sh /app/start.sh
 COPY requirements.txt /app
 COPY waith_for_db.sh /app
-
-COPY src/alembic /app/alembic
-COPY alembic.ini /app
+COPY /src/create_tables.py /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
@@ -26,7 +24,4 @@ WORKDIR /app/api
 EXPOSE 8000
 
 # Run api.py when the container launches
-
 CMD ["sh", "/app/start.sh"]
-
-#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

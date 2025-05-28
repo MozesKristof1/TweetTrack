@@ -10,16 +10,9 @@ fi
 
 echo "Database is up!"
 
-echo "Running Alembic migrations..."
-#alembic -c src/alembic.ini upgrade head
-alembic -c /app/alembic.ini upgrade head
-
-if [ $? -ne 0 ]; then
-    echo "Alembic migration failed!"
-    exit 1
-fi
-
-echo "Alembic finished!"
+cd /app
+python create_tables.py
 
 echo "Starting Uvicorn server..."
+cd /app/api
 uvicorn main:app --host 0.0.0.0 --port 8000

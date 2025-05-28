@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from models.birdDTO import BirdDTO
-from tables import Bird
+from db_tables import Bird
 
 router = APIRouter()
 
