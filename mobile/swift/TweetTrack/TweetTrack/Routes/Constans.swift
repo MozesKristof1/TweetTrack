@@ -1,5 +1,5 @@
 struct Api {
-    static let baseUrl = "https://8d3d-217-73-170-83.ngrok-free.app/"
+    static let baseUrl = "https://7628-82-79-161-115.ngrok-free.app/"
     
     static var birdsEndpoint: String {
             return baseUrl + "birds"
@@ -8,12 +8,16 @@ struct Api {
     static var birdLocationsEndpoint: String {
         return baseUrl + "location"
     }
-}
-struct Localhost {
-    static let baseUrl = "https://8d3d-217-73-170-83.ngrok-free.app/"
     
     static var identifyBird: String {
             return baseUrl + "upload-sound"
     }
-
+    
+    static var register: String {
+            return baseUrl + "register"
+    }
+    
+    static var login: String {
+            return baseUrl + "login"
+    }
 }
