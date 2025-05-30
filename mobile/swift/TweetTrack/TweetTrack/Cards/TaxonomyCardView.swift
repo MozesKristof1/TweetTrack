@@ -4,18 +4,30 @@ struct TaxonomyCardView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Group {
+        VStack {
+            VStack(spacing: 0) {
                 TaxonomyRow(title: "Order", value: "Passeriformes")
+                Divider()
+                    .padding(.leading, 16)
+                    .padding(.trailing, 16)
                 TaxonomyRow(title: "Family", value: "Turdidae")
+                Divider()
+                    .padding(.leading, 16)
+                    .padding(.trailing, 16)
                 TaxonomyRow(title: "Genus", value: "Turdus")
+                Divider()
+                    .padding(.leading, 16)
+                    .padding(.trailing, 16)
                 TaxonomyRow(title: "Species", value: "Turdus merula")
             }
-            .padding(.horizontal)
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .padding()
 
             Spacer()
         }
-        .padding()
         .navigationTitle("Taxonomy")
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -33,10 +45,15 @@ struct TaxonomyRow: View {
 
     var body: some View {
         HStack {
-            Text("\(title):")
-                .fontWeight(.semibold)
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
             Spacer()
             Text(value)
+                .font(.body)
+                .fontWeight(.medium)
         }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
     }
 }
