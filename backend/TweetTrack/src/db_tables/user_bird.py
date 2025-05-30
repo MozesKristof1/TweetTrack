@@ -10,7 +10,7 @@ class UserBird(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    bird_id = Column(UUID(as_uuid=True), ForeignKey("bird.id"), nullable=False)
+    ebird_id = Column(UUID(as_uuid=True), ForeignKey("bird.ebird_id"), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     observed_at = Column(TIMESTAMP(timezone=True), nullable=False)
