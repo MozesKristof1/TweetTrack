@@ -11,7 +11,7 @@ class UserBirdImage(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_bird_id = Column(UUID(as_uuid=True), ForeignKey("user_bird.id"), nullable=False)
-    image_url = Column(String, nullable=False)
+    base64_image = Column(String(255), nullable=False)
+    caption = Column(String, nullable=True)
 
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
     user_bird = relationship("UserBird", back_populates="images")

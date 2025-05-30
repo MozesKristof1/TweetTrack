@@ -8,9 +8,11 @@ class Bird(Base):
     __tablename__ = "bird"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, nullable=False, unique=True)
+    ebird_id = Column(String, unique=True, nullable=True)
+    name = Column(String, unique=True, nullable=False)
+    scientific_name = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     base_image_url = Column(String, nullable=True)
     base_sound_url = Column(String, nullable=True)
 
-    user_bird_entries = relationship("UserBird", back_populates="bird", cascade="all, delete-orphan")
+    user_bird_entries = relationship("UserBird", back_populates="bird")
