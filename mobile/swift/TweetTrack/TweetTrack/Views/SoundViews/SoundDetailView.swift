@@ -8,7 +8,8 @@ struct SoundDetailView: View {
     @State private var detectionResult: String
     @State private var errorMessage: String?
     @State private var isIdentifying: Bool = false
-    
+    @State private var showTaxonomy = false
+
     @Environment(\.modelContext) private var context
     
     init(sound: BirdSoundItem, detectionService: BirdDetectionService, postService: AudioUploadService) {
@@ -99,11 +100,31 @@ struct SoundDetailView: View {
                                 }
                                 .frame(height: 200)
                             }
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    showTaxonomy = true
+                                }) {
+                                    Text("🧬")
+                                        .font(.title)
+                                        .padding(8)
+                                        .background(Color.blue.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                                Spacer()
+                            }
+                            Spacer()
+                        }
+                        .sheet(isPresented: $showTaxonomy) {
+                            NavigationStack {
+                                TaxonomyCardView()
+                            }
                         }
                         .padding()
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(15)
                         .padding(.horizontal)
+                        
                     }
                     
                     if let errorMessage = errorMessage {
