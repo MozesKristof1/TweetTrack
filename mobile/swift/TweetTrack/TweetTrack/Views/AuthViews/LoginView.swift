@@ -29,19 +29,21 @@ struct LoginView: View {
                     await authService.login(username: username, password: password)
                 }
             }) {
-                if authService.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                } else {
-                    Text("Login")
-                        .fontWeight(.semibold)
+                ZStack{
+                    if authService.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text("Login")
+                            .fontWeight(.semibold)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(username.isEmpty || password.isEmpty ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(username.isEmpty || password.isEmpty ? Color.gray : Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
             .disabled(username.isEmpty || password.isEmpty || authService.isLoading)
             
             Spacer()

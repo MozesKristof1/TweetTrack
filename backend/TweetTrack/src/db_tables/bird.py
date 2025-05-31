@@ -8,7 +8,7 @@ class Bird(Base):
     __tablename__ = "bird"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    ebird_id = Column(String, unique=True, nullable=True)
+    ebird_id = Column(UUID(as_uuid=True), unique=True, nullable=True)
     name = Column(String, unique=True, nullable=False)
     scientific_name = Column(String, nullable=True)
     description = Column(Text, nullable=True)

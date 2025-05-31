@@ -6,7 +6,7 @@ DATABASE_URL = "postgresql://postgres:tweetTrack@postgres:5432/tweettrack_db"
 engine = create_engine(DATABASE_URL)
 
 def create_tables():
-    # Base.metadata.drop_all(bind=engine)
+    #Base.metadata.drop_all(bind=engine)
     try:
         print("Attempting to create tables...")
         Base.metadata.create_all(bind=engine, checkfirst=True)

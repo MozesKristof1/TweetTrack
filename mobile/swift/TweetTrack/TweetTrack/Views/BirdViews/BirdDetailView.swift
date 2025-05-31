@@ -22,7 +22,7 @@ struct BirdDetailView: View {
                     }
                     .padding(.horizontal)
                     
-                    Text(bird.description)
+                    Text(bird.description!)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
