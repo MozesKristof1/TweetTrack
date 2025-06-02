@@ -1,10 +1,10 @@
 import base64
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 
-from db_tables import UserBird, Bird, User, UserBirdImage
+from db_tables import UserBird, Bird, User, UserBirdImage, UserBirdSound
 from db import get_db
 from auth.auth_utils import get_current_user
 
@@ -155,13 +155,14 @@ def get_bird_observation(
         bird_scientific_name=observation.bird.scientific_name if observation.bird else None
     )
 
+
 @router.post("/observations/{observation_id}/images", status_code=201)
 def upload_image_for_observation(
-    observation_id: uuid.UUID,
-    file: UploadFile = File,
-    caption: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+        observation_id: uuid.UUID,
+        file: UploadFile = File,
+        caption: Optional[str] = None,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
 ):
     user_bird = db.query(UserBird).filter(
         UserBird.id == observation_id,
@@ -186,6 +187,7 @@ def upload_image_for_observation(
     db.commit()
 
     return {"message": "Image uploaded successfully"}
+
 
 @router.get("/available", response_model=List[dict])
 def get_available_birds(
@@ -213,3 +215,63 @@ def get_available_birds(
         }
         for bird in birds
     ]
+
+
+### Sound
+
+@router.post("/observations/{observation_id}/sounds", status_code=201)
+def upload_sound_for_observation(
+        observation_id: uuid.UUID,
+        file: UploadFile = File(...),
+        identified: bool = Form(default=False),
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+    allowed_audio_types = [
+        "audio/mp3", "audio/wav", "audio/ogg",
+        "audio/m4a", "audio/mp4"
+    ]
+
+    if file.content_type not in allowed_audio_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed types: {', '.join(allowed_audio_types)}"
+        )
+
+    user_bird = db.query(UserBird).filter(
+        UserBird.id == observation_id,
+        UserBird.user_id == current_user.id
+    ).first()
+
+    if not user_bird:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    try:
+        contents = file.file.read()
+
+        file_size_str = f"{len(contents)} bytes"
+
+    finally:
+        file.file.close()
+
+    new_sound = UserBirdSound(
+        user_bird_id=user_bird.id,
+        sound_data=contents,
+        file_name=file.filename,
+        file_type=file.content_type,
+        file_size=file_size_str,
+        identified=identified
+    )
+
+    db.add(new_sound)
+    db.commit()
+    db.refresh(new_sound)
+
+    return {
+        "message": "Sound uploaded successfully",
+        "sound_id": str(new_sound.id),
+        "file_name": new_sound.file_name,
+        "file_type": new_sound.file_type,
+        "file_size": new_sound.file_size,
+        "identified": new_sound.identified
+    }
