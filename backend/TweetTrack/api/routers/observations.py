@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import base64
+
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 
-from db_tables import UserBird, Bird, User
+from db_tables import UserBird, Bird, User, UserBirdImage
 from db import get_db
 from auth.auth_utils import get_current_user
 
@@ -13,7 +15,7 @@ import uuid
 
 
 class BirdObservationCreate(BaseModel):
-    ebird_id: uuid.UUID = Field(...)
+    ebird_id: str = Field(...)
     latitude: float = Field(..., ge=-90, le=90, )
     longitude: float = Field(..., ge=-180, le=180, )
     observed_at: datetime = Field(...)
@@ -23,7 +25,7 @@ class BirdObservationCreate(BaseModel):
 class BirdObservationResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
-    ebird_id: uuid.UUID
+    ebird_id: str
     latitude: float
     longitude: float
     observed_at: datetime
@@ -153,6 +155,37 @@ def get_bird_observation(
         bird_scientific_name=observation.bird.scientific_name if observation.bird else None
     )
 
+@router.post("/observations/{observation_id}/images", status_code=201)
+def upload_image_for_observation(
+    observation_id: uuid.UUID,
+    file: UploadFile = File,
+    caption: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_bird = db.query(UserBird).filter(
+        UserBird.id == observation_id,
+        UserBird.user_id == current_user.id
+    ).first()
+
+    if not user_bird:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    try:
+        contents = file.file.read()
+        # Store image in binary
+    finally:
+        file.file.close()
+
+    new_image = UserBirdImage(
+        user_bird_id=user_bird.id,
+        base64_image=contents,
+        caption=caption
+    )
+    db.add(new_image)
+    db.commit()
+
+    return {"message": "Image uploaded successfully"}
 
 @router.get("/available", response_model=List[dict])
 def get_available_birds(

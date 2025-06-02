@@ -14,7 +14,7 @@ from db_tables import User
 
 SECRET_KEY = "D9wWbM2m_ZVGo9oLgR8_xsMcT3lp0hqDk4NLqKwMfhYtO0xh2pK7s1z7q2Vvp8Dk"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 1000000000
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
