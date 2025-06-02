@@ -279,3 +279,47 @@ def list_sounds_for_observation(
         }
         for sound in sounds
     ]
+
+
+@router.get("/sounds/{ebird_id}")
+def list_sounds_for_bird(
+        ebird_id: str,
+        db: Session = Depends(get_db)
+):
+    # Get all user bird observations for this eBird_id
+    user_birds = db.query(UserBird).filter(
+        UserBird.ebird_id == ebird_id
+    ).all()
+
+    if not user_birds:
+        raise HTTPException(status_code=404, detail="No observations found for this bird")
+
+    user_bird_ids = [user_bird.id for user_bird in user_birds]
+
+    sounds = db.query(UserBirdSound).filter(
+        UserBirdSound.user_bird_id.in_(user_bird_ids)
+    ).all()
+
+    result = []
+    for sound in sounds:
+        user_bird = next(ub for ub in user_birds if ub.id == sound.user_bird_id)
+
+        result.append({
+            "sound_id": str(sound.id),
+            "observation_id": str(user_bird.id),
+            "file_name": sound.file_name,
+            "file_type": sound.file_type,
+            "file_size": sound.file_size,
+            "identified": sound.identified,
+            "observed_at": user_bird.observed_at.isoformat(),
+            "latitude": user_bird.latitude,
+            "longitude": user_bird.longitude,
+            "notes": user_bird.notes
+        })
+
+    return {
+        "ebird_id": ebird_id,
+        "total_observations": len(user_birds),
+        "total_sounds": len(sounds),
+        "sounds": result
+    }
