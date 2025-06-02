@@ -165,6 +165,45 @@ def upload_image_for_observation(
     return {"message": "Image uploaded successfully"}
 
 
+@router.get("/images/{ebird_id}")
+def list_images_for_bird(
+        ebird_id: str,
+        db: Session = Depends(get_db)
+):
+    user_birds = db.query(UserBird).filter(
+        UserBird.ebird_id == ebird_id
+    ).all()
+
+    if not user_birds:
+        raise HTTPException(status_code=404, detail="No observations found for this bird")
+
+    user_bird_ids = [user_bird.id for user_bird in user_birds]
+
+    images = db.query(UserBirdImage).filter(
+        UserBirdImage.user_bird_id.in_(user_bird_ids)
+    ).all()
+
+    result = []
+    for image in images:
+        user_bird = next(ub for ub in user_birds if ub.id == image.user_bird_id)
+
+        result.append({
+            "image_id": str(image.id),
+            "observation_id": str(user_bird.id),
+            "base64_image": image.base64_image,
+            "caption": image.caption,
+            "observed_at": user_bird.observed_at.isoformat(),
+            "latitude": user_bird.latitude,
+            "longitude": user_bird.longitude,
+            "notes": user_bird.notes
+        })
+
+    return {
+        "ebird_id": ebird_id,
+        "total_observations": len(user_birds),
+        "total_images": len(images),
+        "images": result
+    }
 @router.get("/available", response_model=List[dict])
 def get_available_birds(
         db: Session = Depends(get_db),
