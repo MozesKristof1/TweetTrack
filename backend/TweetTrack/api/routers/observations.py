@@ -6,34 +6,10 @@ from db_tables import UserBird, Bird, User, UserBirdImage, UserBirdSound
 from db import get_db
 from auth.auth_utils import get_current_user
 
-from pydantic import BaseModel, Field
-from datetime import datetime
 from typing import Optional
 import uuid
 
-
-class BirdObservationCreate(BaseModel):
-    ebird_id: str = Field(...)
-    latitude: float = Field(..., ge=-90, le=90, )
-    longitude: float = Field(..., ge=-180, le=180, )
-    observed_at: datetime = Field(...)
-    notes: Optional[str] = Field(None, max_length=1000)
-
-
-class BirdObservationResponse(BaseModel):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    ebird_id: str
-    latitude: float
-    longitude: float
-    observed_at: datetime
-    notes: Optional[str]
-    bird_name: Optional[str] = None
-    bird_scientific_name: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
+from models.observation_helper import BirdObservationResponse, BirdObservationCreate
 
 router = APIRouter()
 
@@ -281,7 +257,6 @@ def list_sounds_for_observation(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-
     user_bird = db.query(UserBird).filter(
         UserBird.id == user_bird_id,
         UserBird.user_id == current_user.id
