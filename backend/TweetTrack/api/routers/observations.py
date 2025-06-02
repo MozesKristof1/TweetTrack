@@ -1,3 +1,5 @@
+import base64
+
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from typing import List
@@ -304,9 +306,12 @@ def list_sounds_for_bird(
     for sound in sounds:
         user_bird = next(ub for ub in user_birds if ub.id == sound.user_bird_id)
 
+        sound_data_b64 = base64.b64encode(sound.sound_data).decode('utf-8')
+
         result.append({
             "sound_id": str(sound.id),
             "observation_id": str(user_bird.id),
+            "sound_data_b64": sound_data_b64,
             "file_name": sound.file_name,
             "file_type": sound.file_type,
             "file_size": sound.file_size,
