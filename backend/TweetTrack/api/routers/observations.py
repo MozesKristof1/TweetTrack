@@ -1,5 +1,3 @@
-import base64
-
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session, joinedload
 from typing import List
@@ -121,9 +119,9 @@ def get_user_bird_observations(
     ]
 
 
-@router.get("/observations/{observation_id}", response_model=BirdObservationResponse)
+@router.get("/observations/{user_bird_id}", response_model=BirdObservationResponse)
 def get_bird_observation(
-        observation_id: uuid.UUID,
+        user_bird_id: uuid.UUID,
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
@@ -131,7 +129,7 @@ def get_bird_observation(
         db.query(UserBird)
         .options(joinedload(UserBird.bird))
         .filter(
-            UserBird.id == observation_id,
+            UserBird.id == user_bird_id,
             UserBird.user_id == current_user.id
         )
         .first()
@@ -156,16 +154,16 @@ def get_bird_observation(
     )
 
 
-@router.post("/observations/{observation_id}/images", status_code=201)
+@router.post("/observations/{user_bird_id}/images", status_code=201)
 def upload_image_for_observation(
-        observation_id: uuid.UUID,
+        user_bird_id: uuid.UUID,
         file: UploadFile = File,
         caption: Optional[str] = None,
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
     user_bird = db.query(UserBird).filter(
-        UserBird.id == observation_id,
+        UserBird.id == user_bird_id,
         UserBird.user_id == current_user.id
     ).first()
 
@@ -219,9 +217,9 @@ def get_available_birds(
 
 ### Sound
 
-@router.post("/observations/{observation_id}/sounds", status_code=201)
+@router.post("/observations/{user_bird_id}/sounds", status_code=201)
 def upload_sound_for_observation(
-        observation_id: uuid.UUID,
+        user_bird_id: uuid.UUID,
         file: UploadFile = File(...),
         identified: bool = Form(default=False),
         current_user: User = Depends(get_current_user),
@@ -239,7 +237,7 @@ def upload_sound_for_observation(
         )
 
     user_bird = db.query(UserBird).filter(
-        UserBird.id == observation_id,
+        UserBird.id == user_bird_id,
         UserBird.user_id == current_user.id
     ).first()
 
@@ -275,3 +273,34 @@ def upload_sound_for_observation(
         "file_size": new_sound.file_size,
         "identified": new_sound.identified
     }
+
+
+@router.get("/observations/{user_bird_id}/sounds")
+def list_sounds_for_observation(
+        user_bird_id: uuid.UUID,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+
+    user_bird = db.query(UserBird).filter(
+        UserBird.id == user_bird_id,
+        UserBird.user_id == current_user.id
+    ).first()
+
+    if not user_bird:
+        raise HTTPException(status_code=404, detail="Observation not found")
+
+    sounds = db.query(UserBirdSound).filter(
+        UserBirdSound.user_bird_id == user_bird_id
+    ).all()
+
+    return [
+        {
+            "id": str(sound.id),
+            "file_name": sound.file_name,
+            "file_type": sound.file_type,
+            "file_size": sound.file_size,
+            "identified": sound.identified
+        }
+        for sound in sounds
+    ]
