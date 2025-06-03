@@ -8,6 +8,13 @@ struct BirdDetailView: View {
     @StateObject var birdLocationFetcher = BirdLocationFetcher()
     @StateObject private var userImagesFetcher = UserImagesFetcher()
     
+    @State private var selectedImage: UIImage?
+    @State private var showImagePicker = false
+    @StateObject private var imageUploadViewModel = ImageUploadViewModel()
+    
+    let userBirdId: UUID
+//      let authToken: String
+    
     var body: some View {
         VStack(spacing: 20) {
             ScrollView {
