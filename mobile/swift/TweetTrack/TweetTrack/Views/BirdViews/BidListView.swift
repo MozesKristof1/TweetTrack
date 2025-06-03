@@ -65,7 +65,7 @@ struct BirdListView: View {
     private var birdListView: some View {
         LazyVStack(spacing: 10) {
             ForEach(filteredBirds) { bird in
-                NavigationLink(destination: BirdDetailView(bird: bird, userBirdId: bird.id)) {
+                NavigationLink(destination: BirdDetailView(bird: bird)) {
                     BirdCardView(bird: bird)
                 }
                 .buttonStyle(.plain)

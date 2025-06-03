@@ -1,5 +1,7 @@
 import MapKit
 import SwiftUI
+import CoreLocation
+
 
 struct BirdDetailView: View {
     var bird: Bird
@@ -10,11 +12,14 @@ struct BirdDetailView: View {
     
     @State private var selectedImage: UIImage?
     @State private var showImagePicker = false
+    @State private var showObservationSheet = false
+    @StateObject private var observationViewModel = ObservationViewModel()
     @StateObject private var imageUploadViewModel = ImageUploadViewModel()
     
-    let userBirdId: UUID
-//      let authToken: String
+    @StateObject private var locationManager = LocationManager()
     
+    @EnvironmentObject var authService: AuthService
+
     var body: some View {
         VStack(spacing: 20) {
             ScrollView {
@@ -40,7 +45,15 @@ struct BirdDetailView: View {
                     UserImagesSection(
                         images: userImagesFetcher.userImages,
                         isLoading: userImagesFetcher.isLoading,
-                        errorMessage: userImagesFetcher.errorMessage
+                        errorMessage: userImagesFetcher.errorMessage,
+                        onUploadTapped: {
+                            if authService.isLoggedIn {
+                                showObservationSheet = true
+                            } else {
+                                // TODO: make ui for this
+                                print("User not logged in")
+                            }
+                        }
                     )
                     
                     MapCardView(
@@ -54,94 +67,62 @@ struct BirdDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showObservationSheet) {
+            CreateObservationSheet(
+                bird: bird,
+                observationViewModel: observationViewModel,
+                imageUploadViewModel: imageUploadViewModel,
+                userToken: authService.accessToken,
+                userLocation: locationManager.location,
+                onComplete: {
+                    Task {
+                        await userImagesFetcher.fetchUserImages(for: bird.ebird_id)
+                    }
+                }
+            )
+        }
         .task {
             await birdLocationFetcher.birdLocationFetcher()
             await userImagesFetcher.fetchUserImages(for: bird.ebird_id)
         }
-    }
-}
-
-struct UserImagesSection: View {
-    let images: [UserImageData]
-    let isLoading: Bool
-    let errorMessage: String?
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Divider().padding(.top, 8)
-
-            HStack {
-                Text("Community Photos")
-                    .font(.title3.bold())
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                if !images.isEmpty {
-                    Text("\(images.count) photo\(images.count == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Button {
-                    print("Upload tapped")
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.accentColor)
-                        .font(.title3)
-                }
-            }
-            .padding(.horizontal)
-            
-            Group {
-                if isLoading {
-                    HStack(spacing: 10) {
-                        Spacer()
-                        ProgressView()
-                            .scaleEffect(1)
-                        Text("Loading photos...")
-                            .font(.callout)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                    }
-                } else if let errorMessage = errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .font(.callout)
-                        .foregroundColor(.orange)
-                        .padding(.horizontal)
-                } else if images.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray)
-                        Text("No community photos yet")
-                            .font(.callout)
-                            .foregroundColor(.secondary)
-                        Text("Be the first to share a photo!")
-                            .font(.caption)
-                            .foregroundColor(.accentColor)
-                            .padding(.bottom, 4)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
-                    .padding(.horizontal)
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 16) {
-                            ForEach(images, id: \.image_id) { imageData in
-                                UserImageCard(imageData: imageData)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-            .animation(.easeInOut, value: isLoading)
+        .onAppear {
+            locationManager.requestLocation()
         }
     }
 }
+
+struct StepIndicator: View {
+    let step: Int
+    let title: String
+    let isActive: Bool
+    let isCompleted: Bool
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .fill(isCompleted ? Color.green : (isActive ? Color.accentColor : Color.gray))
+                    .frame(width: 30, height: 30)
+                
+                if isCompleted {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.white)
+                        .font(.caption.bold())
+                } else {
+                    Text("\(step)")
+                        .foregroundColor(.white)
+                        .font(.caption.bold())
+                }
+            }
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(isActive ? .primary : .secondary)
+        }
+    }
+}
+
+
 
 
 struct ThemedButton: View {

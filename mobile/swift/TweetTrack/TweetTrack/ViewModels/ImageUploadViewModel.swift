@@ -7,7 +7,7 @@ class ImageUploadViewModel: ObservableObject {
     @Published var isUploading = false
     @Published var uploadMessage: String?
 
-    func uploadImage(userBirdId: UUID, token: String, caption: String?) async {
+    func uploadImage(observationId: UUID, token: String, caption: String?) async {
         guard let image = selectedImage else {
             uploadMessage = "No image selected"
             return
@@ -18,8 +18,11 @@ class ImageUploadViewModel: ObservableObject {
             return
         }
 
-        let url = URL(string: "http://localhost:8000/observations/\(userBirdId)/images")! // change to your backend
+        isUploading = true
+        uploadMessage = nil
         
+        let url = URL(string: Api.userObservationsImages(observationId.uuidString))!
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -29,15 +32,13 @@ class ImageUploadViewModel: ObservableObject {
         
         var data = Data()
 
-        // Image file
         data.append("--\(boundary)\r\n".data(using: .utf8)!)
         data.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"\r\n".data(using: .utf8)!)
         data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
         data.append(imageData)
         data.append("\r\n".data(using: .utf8)!)
 
-        // Caption
-        if let caption = caption {
+        if let caption = caption, !caption.isEmpty {
             data.append("--\(boundary)\r\n".data(using: .utf8)!)
             data.append("Content-Disposition: form-data; name=\"caption\"\r\n\r\n".data(using: .utf8)!)
             data.append("\(caption)\r\n".data(using: .utf8)!)
@@ -49,12 +50,13 @@ class ImageUploadViewModel: ObservableObject {
         do {
             let (responseData, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                uploadMessage = "No response"
+                uploadMessage = "No response from server"
+                isUploading = false
                 return
             }
 
             if httpResponse.statusCode == 201 {
-                uploadMessage = "Upload successful"
+                uploadMessage = "Image uploaded successfully!"
             } else {
                 let errorText = String(data: responseData, encoding: .utf8) ?? "Unknown error"
                 uploadMessage = "Upload failed: \(errorText)"
@@ -62,5 +64,7 @@ class ImageUploadViewModel: ObservableObject {
         } catch {
             uploadMessage = "Upload error: \(error.localizedDescription)"
         }
+        
+        isUploading = false
     }
 }
