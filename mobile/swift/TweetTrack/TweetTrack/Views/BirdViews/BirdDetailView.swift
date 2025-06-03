@@ -6,6 +6,7 @@ struct BirdDetailView: View {
     let manager = CLLocationManager()
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     @StateObject var birdLocationFetcher = BirdLocationFetcher()
+    @StateObject private var userImagesFetcher = UserImagesFetcher()
     
     var body: some View {
         VStack(spacing: 20) {
@@ -22,32 +23,119 @@ struct BirdDetailView: View {
                     }
                     .padding(.horizontal)
                     
-                    Text(bird.description!)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal)
+                    if let description = bird.description, !description.isEmpty {
+                        Text(description)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal)
+                    }
                     
-                    MapCardView(birdLocations: $birdLocationFetcher.birdLocation, position: $position, manager: manager)
-                        .cornerRadius(12)
-                        .shadow(radius: 5)
-                        .padding()
+                    UserImagesSection(
+                        images: userImagesFetcher.userImages,
+                        isLoading: userImagesFetcher.isLoading,
+                        errorMessage: userImagesFetcher.errorMessage
+                    )
+                    
+                    MapCardView(
+                        birdLocations: $birdLocationFetcher.birdLocation,
+                        position: $position,
+                        manager: manager
+                    )
+                    .cornerRadius(12)
+                    .shadow(radius: 5)
+                    .padding()
                 }
             }
-            
-//            HStack {
-//                Spacer()
-//                ThemedButton(systemName: "plus.app.fill") {
-//                    print("Add button pressed")
-//                }
-//            }
-//            .padding(.trailing, 20)
-//            .padding(.bottom, 20)
         }
         .task {
             await birdLocationFetcher.birdLocationFetcher()
+            await userImagesFetcher.fetchUserImages(for: bird.ebird_id)
         }
     }
 }
+
+struct UserImagesSection: View {
+    let images: [UserImageData]
+    let isLoading: Bool
+    let errorMessage: String?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Divider().padding(.top, 8)
+
+            HStack {
+                Text("Community Photos")
+                    .font(.title3.bold())
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                if !images.isEmpty {
+                    Text("\(images.count) photo\(images.count == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Button {
+                    print("Upload tapped")
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundColor(.accentColor)
+                        .font(.title3)
+                }
+            }
+            .padding(.horizontal)
+            
+            Group {
+                if isLoading {
+                    HStack(spacing: 10) {
+                        Spacer()
+                        ProgressView()
+                            .scaleEffect(1)
+                        Text("Loading photos...")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                } else if let errorMessage = errorMessage {
+                    Label(errorMessage, systemImage: "exclamationmark.triangle")
+                        .font(.callout)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal)
+                } else if images.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                        Text("No community photos yet")
+                            .font(.callout)
+                            .foregroundColor(.secondary)
+                        Text("Be the first to share a photo!")
+                            .font(.caption)
+                            .foregroundColor(.accentColor)
+                            .padding(.bottom, 4)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 16) {
+                            ForEach(images, id: \.image_id) { imageData in
+                                UserImageCard(imageData: imageData)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .animation(.easeInOut, value: isLoading)
+        }
+    }
+}
+
 
 struct ThemedButton: View {
     let systemName: String
@@ -64,8 +152,4 @@ struct ThemedButton: View {
                 .shadow(radius: 5)
         }
     }
-}
-
-#Preview {
-    BirdListView(birdFetcher: BirdFetcher())
 }
