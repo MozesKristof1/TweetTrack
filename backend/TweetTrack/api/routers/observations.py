@@ -135,7 +135,7 @@ def get_bird_observation(
 @router.post("/observations/{user_bird_id}/images", status_code=201)
 def upload_image_for_observation(
         user_bird_id: uuid.UUID,
-        file: UploadFile = File,
+        file: UploadFile = File(...),
         caption: Optional[str] = None,
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
@@ -150,13 +150,13 @@ def upload_image_for_observation(
 
     try:
         contents = file.file.read()
-        # Store image in binary
+        base64_str = base64.b64encode(contents).decode("utf-8")
     finally:
         file.file.close()
 
     new_image = UserBirdImage(
         user_bird_id=user_bird.id,
-        base64_image=contents,
+        base64_image=base64_str,
         caption=caption
     )
     db.add(new_image)
