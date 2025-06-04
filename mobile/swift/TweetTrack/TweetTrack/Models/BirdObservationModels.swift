@@ -8,7 +8,7 @@ struct BirdObservationCreate: Codable {
     let notes: String?
 }
 
-struct BirdObservationResponse: Codable, Equatable {
+struct BirdObservationResponse: Codable, Equatable, Identifiable {
     let id: UUID
     let user_id: UUID
     let ebird_id: String
@@ -16,6 +16,6 @@ struct BirdObservationResponse: Codable, Equatable {
     let longitude: Double
     let observed_at: Date
     let notes: String?
-    let bird_name: String
-    let bird_scientific_name: String
+    let bird_name: String?
+    let bird_scientific_name: String?
 }

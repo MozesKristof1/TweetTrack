@@ -96,7 +96,6 @@ def get_user_bird_observations(
         for obs in observations
     ]
 
-
 @router.get("/observations/{user_bird_id}", response_model=BirdObservationResponse)
 def get_bird_observation(
         user_bird_id: uuid.UUID,

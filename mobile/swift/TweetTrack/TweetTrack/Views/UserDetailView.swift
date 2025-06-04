@@ -57,7 +57,7 @@ struct UserDetailView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
                     
-                    Text("Login to save your favorite birds and access personalized features")
+                    Text("Login to share your observations and become part of the community!")
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
@@ -69,12 +69,6 @@ struct UserDetailView: View {
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
-                    
-                    Text("You can continue using the app without logging in")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
                 }
             }
         }

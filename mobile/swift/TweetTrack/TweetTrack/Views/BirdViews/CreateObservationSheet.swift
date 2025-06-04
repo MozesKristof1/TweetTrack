@@ -13,29 +13,46 @@ struct CreateObservationSheet: View {
     @State private var selectedImage: UIImage?
     @State private var caption: String = ""
     @State private var showImagePicker = false
-    @State private var currentStep: ObservationStep = .createObservation
+    @State private var currentStep: ObservationStep = .selectObservationType
+    @State private var observationType: ObservationType = .createNew
+    @State private var selectedExistingObservation: BirdObservationResponse?
     
     @Environment(\.dismiss) private var dismiss
     
     enum ObservationStep {
+        case selectObservationType
         case createObservation
+        case selectExistingObservation
         case uploadImage
         case completed
+    }
+    
+    enum ObservationType {
+        case createNew
+        case useExisting
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                HStack(spacing: 20) {
+                // Step indicator
+                HStack(spacing: 15) {
                     StepIndicator(
                         step: 1,
-                        title: "Observation",
-                        isActive: currentStep == .createObservation,
-                        isCompleted: currentStep != .createObservation
+                        title: "Choose",
+                        isActive: currentStep == .selectObservationType,
+                        isCompleted: currentStep != .selectObservationType
                     )
                     
                     StepIndicator(
                         step: 2,
+                        title: observationType == .createNew ? "Create" : "Select",
+                        isActive: currentStep == .createObservation || currentStep == .selectExistingObservation,
+                        isCompleted: currentStep == .uploadImage || currentStep == .completed
+                    )
+                    
+                    StepIndicator(
+                        step: 3,
                         title: "Photo",
                         isActive: currentStep == .uploadImage,
                         isCompleted: currentStep == .completed
@@ -45,6 +62,7 @@ struct CreateObservationSheet: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
+                        // Bird info header
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(bird.name)
@@ -62,17 +80,44 @@ struct CreateObservationSheet: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         
-                        if currentStep == .createObservation {
+                        // Step content
+                        switch currentStep {
+                        case .selectObservationType:
+                            selectObservationTypeView
+                        case .createObservation:
                             createObservationView
-                        } else if currentStep == .uploadImage {
+                        case .selectExistingObservation:
+                            selectExistingObservationView
+                        case .uploadImage:
                             uploadImageView
+                        case .completed:
+                            EmptyView()
                         }
                     }
                     .padding()
                 }
                 
+                // Action buttons
                 VStack(spacing: 12) {
-                    if currentStep == .createObservation {
+                    switch currentStep {
+                    case .selectObservationType:
+                        Button("Continue") {
+                            if observationType == .createNew {
+                                currentStep = .createObservation
+                            } else {
+                                // Load existing observations when selecting this option
+                                Task {
+                                    await observationViewModel.loadUserObservations(
+                                        birdEBirdId: bird.ebird_id!,
+                                        token: userToken
+                                    )
+                                }
+                                currentStep = .selectExistingObservation
+                            }
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                        
+                    case .createObservation:
                         Button(action: createObservation) {
                             HStack {
                                 if observationViewModel.isCreatingObservation {
@@ -83,14 +128,18 @@ struct CreateObservationSheet: View {
                                 Text(observationViewModel.isCreatingObservation ? "Creating..." : "Create Observation")
                                     .font(.headline)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.accentColor)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                         }
+                        .buttonStyle(PrimaryButtonStyle())
                         .disabled(observationViewModel.isCreatingObservation || userLocation == nil)
-                    } else if currentStep == .uploadImage {
+                        
+                    case .selectExistingObservation:
+                        Button("Use Selected Observation") {
+                            currentStep = .uploadImage
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .disabled(selectedExistingObservation == nil)
+                        
+                    case .uploadImage:
                         Button(action: uploadImage) {
                             HStack {
                                 if imageUploadViewModel.isUploading {
@@ -101,18 +150,17 @@ struct CreateObservationSheet: View {
                                 Text(imageUploadViewModel.isUploading ? "Uploading..." : "Upload Photo")
                                     .font(.headline)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(selectedImage != nil ? Color.accentColor : Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                         }
+                        .buttonStyle(PrimaryButtonStyle(isEnabled: selectedImage != nil))
                         .disabled(imageUploadViewModel.isUploading || selectedImage == nil)
                         
                         Button("Skip Photo") {
                             completeProcess()
                         }
                         .foregroundColor(.secondary)
+                        
+                    case .completed:
+                        EmptyView()
                     }
                     
                     Button("Cancel") {
@@ -122,7 +170,7 @@ struct CreateObservationSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle("Add Observation")
+            .navigationTitle("Add Photo to Observation")
             .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $showImagePicker) {
@@ -140,6 +188,133 @@ struct CreateObservationSheet: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     completeProcess()
                 }
+            }
+        }
+    }
+    
+    private var selectObservationTypeView: some View {
+        VStack(spacing: 16) {
+            Text("Choose an option")
+                .font(.headline)
+            
+            VStack(spacing: 12) {
+                Button(action: {
+                    observationType = .createNew
+                }) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Create New Observation")
+                                .font(.headline)
+                            Text("Record a new sighting of this bird")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: observationType == .createNew ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(observationType == .createNew ? .accentColor : .gray)
+                    }
+                    .padding()
+                    .background(observationType == .createNew ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+                .foregroundColor(.primary)
+                
+                Button(action: {
+                    observationType = .useExisting
+                }) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Add to Existing Observation")
+                                .font(.headline)
+                            Text("Add a photo to one of your previous sightings")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: observationType == .useExisting ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(observationType == .useExisting ? .accentColor : .gray)
+                    }
+                    .padding()
+                    .background(observationType == .useExisting ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+                .foregroundColor(.primary)
+            }
+        }
+    }
+    
+    private var selectExistingObservationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Select an existing observation")
+                .font(.headline)
+            
+            if observationViewModel.isLoadingObservations {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading your observations...")
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            } else if observationViewModel.userObservations.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "binoculars")
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                    Text("No previous observations found for this bird")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button("Create New Instead") {
+                        observationType = .createNew
+                        currentStep = .createObservation
+                    }
+                    .foregroundColor(.accentColor)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+            } else {
+                LazyVStack(spacing: 8) {
+                    ForEach(observationViewModel.userObservations, id: \.id) { observation in
+                        Button(action: {
+                            selectedExistingObservation = observation
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(DateFormatter.shortDate.string(from: observation.observed_at))
+                                        .font(.headline)
+                                    
+                                    if let notes = observation.notes, !notes.isEmpty {
+                                        Text(notes)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(2)
+                                    }
+                                    
+                                    Text("Lat: \(observation.latitude, specifier: "%.4f"), Lng: \(observation.longitude, specifier: "%.4f")")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: selectedExistingObservation?.id == observation.id ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(selectedExistingObservation?.id == observation.id ? .accentColor : .gray)
+                            }
+                            .padding()
+                            .background(selectedExistingObservation?.id == observation.id ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
+                            .cornerRadius(12)
+                        }
+                        .foregroundColor(.primary)
+                    }
+                }
+            }
+            
+            if let message = observationViewModel.observationMessage {
+                Text(message)
+                    .foregroundColor(message.contains("successfully") ? .green : .red)
+                    .font(.callout)
             }
         }
     }
@@ -244,12 +419,20 @@ struct CreateObservationSheet: View {
     }
     
     private func uploadImage() {
-        guard let observation = observationViewModel.createdObservation else { return }
+        let observationId: UUID
+        
+        if let createdObservation = observationViewModel.createdObservation {
+            observationId = createdObservation.id
+        } else if let selectedObservation = selectedExistingObservation {
+            observationId = selectedObservation.id
+        } else {
+            return
+        }
         
         imageUploadViewModel.selectedImage = selectedImage
         Task {
             await imageUploadViewModel.uploadImage(
-                observationId: observation.id,
+                observationId: observationId,
                 token: userToken,
                 caption: caption.isEmpty ? nil : caption
             )
@@ -260,4 +443,33 @@ struct CreateObservationSheet: View {
         onComplete()
         dismiss()
     }
+}
+
+// Helper button style
+struct PrimaryButtonStyle: ButtonStyle {
+    let isEnabled: Bool
+    
+    init(isEnabled: Bool = true) {
+        self.isEnabled = isEnabled
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(isEnabled ? Color.accentColor : Color.gray)
+            .foregroundColor(.white)
+            .cornerRadius(12)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+    }
+}
+
+// Helper date formatter
+extension DateFormatter {
+    static let shortDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 }
