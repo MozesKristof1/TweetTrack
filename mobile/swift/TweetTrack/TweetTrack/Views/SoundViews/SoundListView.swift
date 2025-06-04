@@ -31,34 +31,59 @@ struct SoundListView: View {
             }
 
             ScrollView {
-                ForEach(birdSounds) { sound in
-                    Group {
-                        if checkIfPathExists(path: sound.audioDataPath) {
-                            NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService, postService: postService)) {
-                                SoundCardView(
-                                    sound: sound,
-                                    onDelete: {
-                                        context.delete(sound)
-                                    },
-                                    onPlay: {
-                                        playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
-                                    },
-                                    onStop: {
-                                        audioPlayer.stopAudio()
-                                    }
-                                )
-                            }
-                        } else {
-                            // Use this text to delete non existing sound items
-                            Text("Audio file not found")
-                                .hidden()
-                                .onAppear {
-                                    context.delete(sound)
-                                }
-                        }
+                if birdSounds.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "waveform.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(.gray.opacity(0.6))
+                            .padding()
+
+                        Text("No Bird Recordings Yet")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+
+                        Text("Tap the button above to start recording bird sounds.")
+                            .font(.body)
+                            .foregroundColor(.gray.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+
                     }
-                    .contentShape(Rectangle())
-                    .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 50)
+                    .transition(.opacity.combined(with: .scale))
+                    .animation(.easeInOut(duration: 0.3), value: birdSounds.isEmpty)
+                } else {
+                    ForEach(birdSounds) { sound in
+                        Group {
+                            if checkIfPathExists(path: sound.audioDataPath) {
+                                NavigationLink(destination: SoundDetailView(sound: sound, detectionService: detectionService, postService: postService)) {
+                                    SoundCardView(
+                                        sound: sound,
+                                        onDelete: {
+                                            context.delete(sound)
+                                        },
+                                        onPlay: {
+                                            playRecordingAtUrl(url: URL(fileURLWithPath: sound.audioDataPath))
+                                        },
+                                        onStop: {
+                                            audioPlayer.stopAudio()
+                                        }
+                                    )
+                                }
+                            } else {
+                                Text("Audio file not found")
+                                    .hidden()
+                                    .onAppear {
+                                        context.delete(sound)
+                                    }
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .padding(.vertical, 4)
+                    }
                 }
             }
             .padding()
