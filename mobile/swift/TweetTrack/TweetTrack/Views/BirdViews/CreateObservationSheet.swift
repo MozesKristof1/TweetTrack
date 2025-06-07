@@ -16,6 +16,7 @@ struct CreateObservationSheet: View {
     @State private var currentStep: ObservationStep = .selectObservationType
     @State private var observationType: ObservationType = .createNew
     @State private var selectedExistingObservation: BirdObservationResponse?
+    @State private var showSoundUpload = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -159,6 +160,12 @@ struct CreateObservationSheet: View {
                         }
                         .foregroundColor(.secondary)
                         
+                        Button("Add Sound Instead") {
+                            currentStep = .completed
+                            showSoundUpload = true
+                        }
+                        .foregroundColor(.accentColor)
+                        
                     case .completed:
                         EmptyView()
                     }
@@ -188,6 +195,17 @@ struct CreateObservationSheet: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     completeProcess()
                 }
+            }
+        }
+        .sheet(isPresented: $showSoundUpload) {
+            if let observationId = getObservationId() {
+                UploadSoundSheet(
+                    observationId: observationId,
+                    userToken: userToken,
+                    onComplete: {
+                        completeProcess()
+                    }
+                )
             }
         }
     }
@@ -439,13 +457,21 @@ struct CreateObservationSheet: View {
         }
     }
     
+    private func getObservationId() -> UUID? {
+        if let createdObservation = observationViewModel.createdObservation {
+            return createdObservation.id
+        } else if let selectedObservation = selectedExistingObservation {
+            return selectedObservation.id
+        }
+        return nil
+    }
+    
     private func completeProcess() {
         onComplete()
         dismiss()
     }
 }
 
-// Helper button style
 struct PrimaryButtonStyle: ButtonStyle {
     let isEnabled: Bool
     
@@ -464,7 +490,6 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-// Helper date formatter
 extension DateFormatter {
     static let shortDate: DateFormatter = {
         let formatter = DateFormatter()
