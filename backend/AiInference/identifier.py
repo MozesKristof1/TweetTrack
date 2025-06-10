@@ -22,8 +22,10 @@ else:
     print(f"❌ Model not found at {SAVE_PATH}. Please ensure the model is copied to this location.")
 
 # Load bird labels
-LABELS_PATH = "label.csv"
-bird_labels = load_labels(LABELS_PATH)
+bird_labels = load_labels("label.csv")
+genus_labels = load_labels("genus.csv")
+family_labels = load_labels("family.csv")
+order_labels = load_labels("order.csv")
 
 # def frame_audio(
 #       audio_array: np.ndarray,
@@ -66,12 +68,28 @@ def classify_bird(audio_data):
     # Extract raw logits
     label_logits = model_outputs['label'].numpy()[0]
     label_probs = tf.nn.softmax(label_logits).numpy()
+    top_1_index_label = np.argmax(label_probs)
 
-    top_1_index = np.argmax(label_probs)
+    order_logits = model_outputs['order'].numpy()[0]
+    order_probs = tf.nn.softmax(order_logits).numpy()
+    top_1_index_order = np.argmax(order_probs)
 
-    bird_name = bird_labels.get(top_1_index, "Unknown Bird")
-    print(f"🦜 {bird_name} - probability: {label_probs[top_1_index]:.4f}")
-    return bird_name, label_probs[top_1_index]
+    family_logits = model_outputs['family'].numpy()[0]
+    family_probs = tf.nn.softmax(family_logits).numpy()
+    top_1_index_family = np.argmax(family_probs)
+
+    genus_logits = model_outputs['genus'].numpy()[0]
+    genus_probs = tf.nn.softmax(genus_logits).numpy()
+    top_1_index_genus = np.argmax(genus_probs)
+
+    bird_genus = genus_labels.get(top_1_index_genus, "Unknown Bird")
+    bird_family = family_labels.get(top_1_index_family, "Unknown Bird")
+    bird_order = order_labels.get(top_1_index_order, "Unknown Bird")
+
+    bird_name = bird_labels.get(top_1_index_label, "Unknown Bird")
+    print(f"🦜 {bird_name} - probability: {label_probs[top_1_index_label]:.4f}")
+    return bird_name, label_probs[top_1_index_label], bird_genus, bird_family, bird_order
+
 
 # def classify_bird(audio_data):
 #     # Load audio directly from raw bytes
