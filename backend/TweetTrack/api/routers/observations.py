@@ -1,368 +1,134 @@
-import base64
-
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
-from sqlalchemy.orm import Session, joinedload
-from typing import List
-
-from db_tables import UserBird, Bird, User, UserBirdImage, UserBirdSound
-from db import get_db
-from auth.auth_utils import get_current_user
-
-from typing import Optional
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form
+from sqlalchemy.orm import Session
+from typing import List, Optional
 import uuid
 
+from db_tables import User
+from db import get_db
+from auth.auth_utils import get_current_user
 from models.observation_helper import BirdObservationResponse, BirdObservationCreate
+from repositories.bird_image_repository import BirdImageRepository
+
+from repositories.bird_repository import BirdRepository
+from repositories.bird_sound_repository import BirdSoundRepository
+from services.observation_service import BirdObservationService, BirdImageService, BirdSoundService
 
 router = APIRouter()
 
 
+def get_bird_repository(db: Session = Depends(get_db)) -> BirdRepository:
+    return BirdRepository(db)
+
+def get_bird_image_repository(db: Session = Depends(get_db)) -> BirdImageRepository:
+    return BirdImageRepository(db)
+
+def get_bird_sound_repository(db: Session = Depends(get_db)) -> BirdSoundRepository:
+    return BirdSoundRepository(db)
+
+def get_bird_observation_service(
+    bird_repo: BirdRepository = Depends(get_bird_repository),
+    image_repo: BirdImageRepository = Depends(get_bird_image_repository),
+    sound_repo: BirdSoundRepository = Depends(get_bird_sound_repository)
+) -> BirdObservationService:
+    return BirdObservationService(bird_repo, image_repo, sound_repo)
+
+
+def get_bird_image_service(
+    bird_repo: BirdRepository = Depends(get_bird_repository),
+    image_repo: BirdImageRepository = Depends(get_bird_image_repository)
+) -> BirdImageService:
+    return BirdImageService(bird_repo, image_repo)
+
+
+def get_bird_sound_service(
+    bird_repo: BirdRepository = Depends(get_bird_repository),
+    sound_repo: BirdSoundRepository = Depends(get_bird_sound_repository)
+) -> BirdSoundService:
+    return BirdSoundService(bird_repo, sound_repo)
+
+
+# Bird Observations
 @router.post("/observations", response_model=BirdObservationResponse, status_code=status.HTTP_201_CREATED)
 def create_bird_observation(
-        observation: BirdObservationCreate,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+    observation: BirdObservationCreate,
+    current_user: User = Depends(get_current_user),
+    service: BirdObservationService = Depends(get_bird_observation_service)
 ):
-    bird = db.query(Bird).filter(Bird.ebird_id == observation.ebird_id).first()
-    if not bird:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Bird with eBird ID {observation.ebird_id} not found"
-        )
-
-    # Create the observation
-    user_bird = UserBird(
-        user_id=current_user.id,
-        ebird_id=observation.ebird_id,
-        latitude=observation.latitude,
-        longitude=observation.longitude,
-        observed_at=observation.observed_at,
-        notes=observation.notes
-    )
-
-    try:
-        db.add(user_bird)
-        db.commit()
-        db.refresh(user_bird)
-
-        # Return response with bird details
-        return BirdObservationResponse(
-            id=user_bird.id,
-            user_id=user_bird.user_id,
-            ebird_id=user_bird.ebird_id,
-            latitude=user_bird.latitude,
-            longitude=user_bird.longitude,
-            observed_at=user_bird.observed_at,
-            notes=user_bird.notes,
-            bird_name=bird.name,
-            bird_scientific_name=bird.scientific_name
-        )
-
-    except Exception:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create bird observation"
-        )
+    return service.create_bird_observation(observation, current_user)
 
 
 @router.get("/observations", response_model=List[BirdObservationResponse])
 def get_user_bird_observations(
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db),
-        skip: int = 0,
-        limit: int = 100
+    skip: int = 0,
+    limit: int = 100,
+    service: BirdObservationService = Depends(get_bird_observation_service)
 ):
-    observations = (
-        db.query(UserBird)
-        .options(joinedload(UserBird.bird))
-        .filter(UserBird.user_id == current_user.id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    return service.get_user_bird_observations(skip, limit)
 
-    return [
-        BirdObservationResponse(
-            id=obs.id,
-            user_id=obs.user_id,
-            ebird_id=obs.ebird_id,
-            latitude=obs.latitude,
-            longitude=obs.longitude,
-            observed_at=obs.observed_at,
-            notes=obs.notes,
-            bird_name=obs.bird.name if obs.bird else None,
-            bird_scientific_name=obs.bird.scientific_name if obs.bird else None
-        )
-        for obs in observations
-    ]
 
 @router.get("/observations/{user_bird_id}", response_model=BirdObservationResponse)
 def get_bird_observation(
-        user_bird_id: uuid.UUID,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+    user_bird_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: BirdObservationService = Depends(get_bird_observation_service)
 ):
-    observation = (
-        db.query(UserBird)
-        .options(joinedload(UserBird.bird))
-        .filter(
-            UserBird.id == user_bird_id,
-            UserBird.user_id == current_user.id
-        )
-        .first()
-    )
-
-    if not observation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Bird observation not found"
-        )
-
-    return BirdObservationResponse(
-        id=observation.id,
-        user_id=observation.user_id,
-        ebird_id=observation.ebird_id,
-        latitude=observation.latitude,
-        longitude=observation.longitude,
-        observed_at=observation.observed_at,
-        notes=observation.notes,
-        bird_name=observation.bird.name if observation.bird else None,
-        bird_scientific_name=observation.bird.scientific_name if observation.bird else None
-    )
+    return service.get_bird_observation_by_id(user_bird_id, current_user)
 
 
+@router.get("/available", response_model=List[dict])
+def get_available_birds(
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    service: BirdObservationService = Depends(get_bird_observation_service)
+):
+    return service.get_available_birds(skip, limit, search)
+
+
+# Image Endpoints
 @router.post("/observations/{user_bird_id}/images", status_code=201)
 def upload_image_for_observation(
-        user_bird_id: uuid.UUID,
-        file: UploadFile = File(...),
-        caption: Optional[str] = None,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+    user_bird_id: uuid.UUID,
+    file: UploadFile = File(...),
+    caption: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    service: BirdImageService = Depends(get_bird_image_service)
 ):
-    user_bird = db.query(UserBird).filter(
-        UserBird.id == user_bird_id,
-        UserBird.user_id == current_user.id
-    ).first()
-
-    if not user_bird:
-        raise HTTPException(status_code=404, detail="Observation not found")
-
-    try:
-        contents = file.file.read()
-        base64_str = base64.b64encode(contents).decode("utf-8")
-    finally:
-        file.file.close()
-
-    new_image = UserBirdImage(
-        user_bird_id=user_bird.id,
-        base64_image=base64_str,
-        caption=caption
-    )
-    db.add(new_image)
-    db.commit()
-
-    return {"message": "Image uploaded successfully"}
+    return service.upload_image_for_observation(user_bird_id, file, caption, current_user)
 
 
 @router.get("/images/{ebird_id}")
 def list_images_for_bird(
-        ebird_id: str,
-        db: Session = Depends(get_db)
+    ebird_id: str,
+    service: BirdImageService = Depends(get_bird_image_service)
 ):
-    user_birds = db.query(UserBird).filter(
-        UserBird.ebird_id == ebird_id
-    ).all()
-
-    if not user_birds:
-        raise HTTPException(status_code=404, detail="No observations found for this bird")
-
-    user_bird_ids = [user_bird.id for user_bird in user_birds]
-
-    images = db.query(UserBirdImage).filter(
-        UserBirdImage.user_bird_id.in_(user_bird_ids)
-    ).all()
-
-    result = []
-    for image in images:
-        user_bird = next(ub for ub in user_birds if ub.id == image.user_bird_id)
-
-        result.append({
-            "image_id": str(image.id),
-            "observation_id": str(user_bird.id),
-            "base64_image": image.base64_image,
-            "caption": image.caption,
-            "observed_at": user_bird.observed_at.isoformat(),
-            "latitude": user_bird.latitude,
-            "longitude": user_bird.longitude,
-            "notes": user_bird.notes
-        })
-
-    return {
-        "ebird_id": ebird_id,
-        "total_observations": len(user_birds),
-        "total_images": len(images),
-        "images": result
-    }
-@router.get("/available", response_model=List[dict])
-def get_available_birds(
-        db: Session = Depends(get_db),
-        skip: int = 0,
-        limit: int = 100,
-        search: str = None
-):
-    query = db.query(Bird)
-
-    if search:
-        query = query.filter(
-            Bird.name.ilike(f"%{search}%") |
-            Bird.scientific_name.ilike(f"%{search}%")
-        )
-
-    birds = query.offset(skip).limit(limit).all()
-
-    return [
-        {
-            "ebird_id": bird.ebird_id,
-            "name": bird.name,
-            "scientific_name": bird.scientific_name,
-            "description": bird.description
-        }
-        for bird in birds
-    ]
+    return service.list_images_for_bird(ebird_id)
 
 
-### Sound
-
+# Sound Endpoints
 @router.post("/observations/{user_bird_id}/sounds", status_code=201)
 def upload_sound_for_observation(
-        user_bird_id: uuid.UUID,
-        file: UploadFile = File(...),
-        identified: bool = Form(default=False),
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+    user_bird_id: uuid.UUID,
+    file: UploadFile = File(...),
+    identified: bool = Form(default=False),
+    current_user: User = Depends(get_current_user),
+    service: BirdSoundService = Depends(get_bird_sound_service)
 ):
-    allowed_audio_types = [
-        "audio/mp3", "audio/wav", "audio/ogg",
-        "audio/m4a", "audio/mp4"
-    ]
-
-    if file.content_type not in allowed_audio_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type. Allowed types: {', '.join(allowed_audio_types)}"
-        )
-
-    user_bird = db.query(UserBird).filter(
-        UserBird.id == user_bird_id,
-        UserBird.user_id == current_user.id
-    ).first()
-
-    if not user_bird:
-        raise HTTPException(status_code=404, detail="Observation not found")
-
-    try:
-        contents = file.file.read()
-
-        file_size_str = f"{len(contents)} bytes"
-
-    finally:
-        file.file.close()
-
-    new_sound = UserBirdSound(
-        user_bird_id=user_bird.id,
-        sound_data=contents,
-        file_name=file.filename,
-        file_type=file.content_type,
-        file_size=file_size_str,
-        identified=identified
-    )
-
-    db.add(new_sound)
-    db.commit()
-    db.refresh(new_sound)
-
-    return {
-        "message": "Sound uploaded successfully",
-        "sound_id": str(new_sound.id),
-        "file_name": new_sound.file_name,
-        "file_type": new_sound.file_type,
-        "file_size": new_sound.file_size,
-        "identified": new_sound.identified
-    }
+    return service.upload_sound_for_observation(user_bird_id, file, identified, current_user)
 
 
 @router.get("/observations/{user_bird_id}/sounds")
 def list_sounds_for_observation(
-        user_bird_id: uuid.UUID,
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+    user_bird_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: BirdSoundService = Depends(get_bird_sound_service)
 ):
-    user_bird = db.query(UserBird).filter(
-        UserBird.id == user_bird_id,
-        UserBird.user_id == current_user.id
-    ).first()
-
-    if not user_bird:
-        raise HTTPException(status_code=404, detail="Observation not found")
-
-    sounds = db.query(UserBirdSound).filter(
-        UserBirdSound.user_bird_id == user_bird_id
-    ).all()
-
-    return [
-        {
-            "id": str(sound.id),
-            "file_name": sound.file_name,
-            "file_type": sound.file_type,
-            "file_size": sound.file_size,
-            "identified": sound.identified
-        }
-        for sound in sounds
-    ]
+    return service.list_sounds_for_observation(user_bird_id, current_user)
 
 
 @router.get("/sounds/{ebird_id}")
 def list_sounds_for_bird(
-        ebird_id: str,
-        db: Session = Depends(get_db)
+    ebird_id: str,
+    service: BirdSoundService = Depends(get_bird_sound_service)
 ):
-    # Get all user bird observations for this eBird_id
-    user_birds = db.query(UserBird).filter(
-        UserBird.ebird_id == ebird_id
-    ).all()
-
-    if not user_birds:
-        raise HTTPException(status_code=404, detail="No observations found for this bird")
-
-    user_bird_ids = [user_bird.id for user_bird in user_birds]
-
-    sounds = db.query(UserBirdSound).filter(
-        UserBirdSound.user_bird_id.in_(user_bird_ids)
-    ).all()
-
-    result = []
-    for sound in sounds:
-        user_bird = next(ub for ub in user_birds if ub.id == sound.user_bird_id)
-
-        sound_data_b64 = base64.b64encode(sound.sound_data).decode('utf-8')
-
-        result.append({
-            "sound_id": str(sound.id),
-            "observation_id": str(user_bird.id),
-            "sound_data_b64": sound_data_b64,
-            "file_name": sound.file_name,
-            "file_type": sound.file_type,
-            "file_size": sound.file_size,
-            "identified": sound.identified,
-            "observed_at": user_bird.observed_at.isoformat(),
-            "latitude": user_bird.latitude,
-            "longitude": user_bird.longitude,
-            "notes": user_bird.notes
-        })
-
-    return {
-        "ebird_id": ebird_id,
-        "total_observations": len(user_birds),
-        "total_sounds": len(sounds),
-        "sounds": result
-    }
+    return service.list_sounds_for_bird(ebird_id)
