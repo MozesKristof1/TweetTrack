@@ -1,24 +1,25 @@
 import SwiftUI
 
 struct TaxonomyCardView: View {
+    let sound: BirdSoundItem
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack {
             VStack(spacing: 0) {
-                TaxonomyRow(title: "Order", value: "Passeriformes")
+                TaxonomyRow(title: "Order", value: sound.order ?? "Unknown")
                 Divider()
                     .padding(.leading, 16)
                     .padding(.trailing, 16)
-                TaxonomyRow(title: "Family", value: "Turdidae")
+                TaxonomyRow(title: "Family", value: sound.family ?? "Unknown")
                 Divider()
                     .padding(.leading, 16)
                     .padding(.trailing, 16)
-                TaxonomyRow(title: "Genus", value: "Turdus")
+                TaxonomyRow(title: "Genus", value: sound.genus ?? "Unknown")
                 Divider()
                     .padding(.leading, 16)
                     .padding(.trailing, 16)
-                TaxonomyRow(title: "Species", value: "Turdus merula")
+                TaxonomyRow(title: "Species", value: sound.scientificName ?? "Unknown")
             }
             .padding()
             .background(Color(.systemBackground))

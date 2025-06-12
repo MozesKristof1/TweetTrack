@@ -42,6 +42,7 @@ class BirdObservationService:
                 id=bird.id,
                 ebird_id=bird.ebird_id,
                 name=bird.name,
+                base_image_url=bird.base_image_url,
                 scientific_name=bird.scientific_name,
                 description=bird.description,
             )
