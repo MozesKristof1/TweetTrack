@@ -3,6 +3,11 @@ import SwiftUI
 struct OnboardingView: View {
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
 
+    init() {
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.blue
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor.lightGray
+    }
+
     var body: some View {
         TabView {
             OnboardingPageView(
@@ -26,5 +31,13 @@ struct OnboardingView: View {
             )
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+        .indexViewStyle(.page(backgroundDisplayMode: .always))
+    }
+}
+
+struct OnboardingView_Previews: PreviewProvider {
+    static var previews: some View {
+        OnboardingView()
+            .preferredColorScheme(.light)
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 import CoreLocation
 
-struct CreateObservationSheet: View {
+struct ObservationSheet: View {
     let bird: Bird
     @ObservedObject var observationViewModel: ObservationViewModel
     @ObservedObject var imageUploadViewModel: ImageUploadViewModel
@@ -106,7 +106,7 @@ struct CreateObservationSheet: View {
                             if observationType == .createNew {
                                 currentStep = .createObservation
                             } else {
-                                // Load existing observations when selecting this option
+                                // Load existing observations
                                 Task {
                                     await observationViewModel.loadUserObservations(
                                         birdEBirdId: bird.ebird_id!,

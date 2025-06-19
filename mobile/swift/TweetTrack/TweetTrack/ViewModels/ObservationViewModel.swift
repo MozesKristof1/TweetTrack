@@ -7,6 +7,7 @@ class ObservationViewModel: ObservableObject {
     @Published var observationMessage: String?
     @Published var createdObservation: BirdObservationResponse?
     @Published var userObservations: [BirdObservationResponse] = []
+    @Published var myObservations: [BirdObservationResponse] = []
     
     func createObservation(
         bird: Bird,
@@ -91,7 +92,7 @@ class ObservationViewModel: ObservableObject {
                     let container = try decoder.singleValueContainer()
                     let dateString = try container.decode(String.self)
                     
-                    //ISO8601
+                    // ISO8601
                     let iso8601Formatter = ISO8601DateFormatter()
                     iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
                     if let date = iso8601Formatter.date(from: dateString) {
@@ -103,7 +104,7 @@ class ObservationViewModel: ObservableObject {
                         return date
                     }
                     
-                    //standard ISO8601
+                    // standard ISO8601
                     let standardFormatter = DateFormatter()
                     standardFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
                     if let date = standardFormatter.date(from: dateString) {
@@ -117,7 +118,7 @@ class ObservationViewModel: ObservableObject {
                 
                 // get observations for the specific bird
                 userObservations = allObservations.filter { observation in
-                    return observation.ebird_id == birdEBirdId
+                    observation.ebird_id == birdEBirdId
                 }
                 
                 print("Loaded \(userObservations.count) observations for bird \(birdEBirdId)")
@@ -148,12 +149,93 @@ class ObservationViewModel: ObservableObject {
         isLoadingObservations = false
     }
     
-    // Reset function
+    func loadMyObservations(token: String) async {
+        isLoadingObservations = true
+        observationMessage = nil
+        myObservations = []
+            
+        guard let url = URL(string: Api.myObservations) else {
+            observationMessage = "Invalid URL"
+            isLoadingObservations = false
+            return
+        }
+            
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+                
+            guard let httpResponse = response as? HTTPURLResponse else {
+                observationMessage = "No response from server"
+                isLoadingObservations = false
+                return
+            }
+                
+            if httpResponse.statusCode == 200 {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateString = try container.decode(String.self)
+                        
+                    // ISO8601
+                    let iso8601Formatter = ISO8601DateFormatter()
+                    iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                    if let date = iso8601Formatter.date(from: dateString) {
+                        return date
+                    }
+                        
+                    iso8601Formatter.formatOptions = [.withInternetDateTime]
+                    if let date = iso8601Formatter.date(from: dateString) {
+                        return date
+                    }
+                        
+                    // standard ISO8601
+                    let standardFormatter = DateFormatter()
+                    standardFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                    if let date = standardFormatter.date(from: dateString) {
+                        return date
+                    }
+                        
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+                }
+                    
+                myObservations = try decoder.decode([BirdObservationResponse].self, from: data)
+                print("Loaded \(myObservations.count) observations for current user")
+            } else {
+                let errorText = String(data: data, encoding: .utf8) ?? "Unknown error"
+                observationMessage = "Failed to load observations: \(errorText)"
+                print("HTTP Error \(httpResponse.statusCode): \(errorText)")
+            }
+        } catch let decodingError as DecodingError {
+            print("Decoding error: \(decodingError)")
+            switch decodingError {
+            case .keyNotFound(let key, _):
+                observationMessage = "Missing key '\(key.stringValue)' in response"
+            case .typeMismatch(let type, let context):
+                observationMessage = "Type mismatch for type \(type) at \(context.codingPath)"
+            case .valueNotFound(let type, let context):
+                observationMessage = "Value not found for type \(type) at \(context.codingPath)"
+            case .dataCorrupted(let context):
+                observationMessage = "Data corrupted: \(context.debugDescription)"
+            @unknown default:
+                observationMessage = "Unknown decoding error: \(decodingError.localizedDescription)"
+            }
+        } catch {
+            observationMessage = "Error loading observations: \(error.localizedDescription)"
+            print("General error: \(error)")
+        }
+            
+        isLoadingObservations = false
+    }
+    
     func reset() {
         isCreatingObservation = false
         isLoadingObservations = false
         observationMessage = nil
         createdObservation = nil
         userObservations = []
+        myObservations = []
     }
 }

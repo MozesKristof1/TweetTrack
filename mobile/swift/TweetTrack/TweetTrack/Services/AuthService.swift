@@ -5,7 +5,7 @@ class AuthService: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     @Published var isLoggedIn = false
-    @Published var accessToken = ""
+    @Published var accessToken: String? = nil 
     @Published var currentUser: String = ""
     
     init() {
