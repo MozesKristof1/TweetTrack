@@ -65,6 +65,16 @@ def get_user_bird_observations(
 ):
     return service.get_user_bird_observations(skip, limit)
 
+@router.get("/myobservations", response_model=List[BirdObservationResponse])
+def get_user_bird_observations(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    service: BirdObservationService = Depends(get_bird_observation_service)
+):
+    return service.get_user_observations(skip, limit, current_user)
+
+
 
 @router.get("/observations/{user_bird_id}", response_model=BirdObservationResponse)
 def get_bird_observation(
@@ -73,16 +83,6 @@ def get_bird_observation(
     service: BirdObservationService = Depends(get_bird_observation_service)
 ):
     return service.get_bird_observation_by_id(user_bird_id, current_user)
-
-
-@router.get("/available", response_model=List[dict])
-def get_available_birds(
-    skip: int = 0,
-    limit: int = 100,
-    search: Optional[str] = None,
-    service: BirdObservationService = Depends(get_bird_observation_service)
-):
-    return service.get_available_birds(skip, limit, search)
 
 
 # Image Endpoints

@@ -4,7 +4,6 @@ import uuid
 from fastapi import HTTPException, status, UploadFile
 
 from db_tables import UserBird, User, UserBirdImage, UserBirdSound
-from models.birdDTO import BirdDTO
 from models.observation_helper import BirdObservationResponse, BirdObservationCreate
 from repositories.bird_image_repository import BirdImageRepository
 from repositories.bird_repository import BirdRepository
@@ -21,33 +20,6 @@ class BirdObservationService:
         self.bird_repo = bird_repo
         self.image_repo = image_repo
         self.sound_repo = sound_repo
-
-    def get_all_birds(self, limit=100, offset=0) -> List[BirdDTO]:
-        if limit <= 0 or limit > 1000:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Limit must be between 1 and 1000"
-            )
-
-        if offset < 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Offset must be non-negative"
-            )
-
-        birds = self.bird_repo.fetch_birds(limit=limit)
-
-        return [
-            BirdDTO(
-                id=bird.id,
-                ebird_id=bird.ebird_id,
-                name=bird.name,
-                base_image_url=bird.base_image_url,
-                scientific_name=bird.scientific_name,
-                description=bird.description,
-            )
-            for bird in birds
-        ]
 
     def create_bird_observation(
             self,
@@ -94,6 +66,25 @@ class BirdObservationService:
 
     def get_user_bird_observations(self, skip: int = 0, limit: int = 100) -> List[BirdObservationResponse]:
         observations = self.bird_repo.get_user_bird_observations(skip, limit)
+
+        return [
+            BirdObservationResponse(
+                id=obs.id,
+                user_id=obs.user_id,
+                ebird_id=obs.ebird_id,
+                latitude=obs.latitude,
+                longitude=obs.longitude,
+                observed_at=obs.observed_at,
+                notes=obs.notes,
+                bird_name=obs.bird.name if obs.bird else None,
+                bird_scientific_name=obs.bird.scientific_name if obs.bird else None
+            )
+            for obs in observations
+        ]
+
+    def get_user_observations(self, skip: int = 0, limit: int = 100, current_user: User = None) -> List[
+        BirdObservationResponse]:
+        observations = self.bird_repo.get_user_observations(skip, limit, current_user.id if current_user else None)
 
         return [
             BirdObservationResponse(
