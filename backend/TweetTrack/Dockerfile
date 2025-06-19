@@ -15,7 +15,8 @@ COPY waith_for_db.sh /app
 COPY /src/create_tables.py /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r /app/requirements.txt
 RUN chmod +x /app/start.sh
 RUN chmod +x /app/waith_for_db.sh
 WORKDIR /app/api
