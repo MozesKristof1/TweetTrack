@@ -13,7 +13,7 @@ struct MapCardView: View {
                 Marker(
                     coordinate: CLLocationCoordinate2D(latitude: CLLocationDegrees(birdLocation.latitude), longitude: CLLocationDegrees(birdLocation.longitude))
                 ) {
-                    Label("bird", systemImage: "bird")
+                    Label("", systemImage: "bird")
                 }
                 .tint(.red)
             }
