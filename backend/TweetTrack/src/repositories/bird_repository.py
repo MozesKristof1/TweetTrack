@@ -15,6 +15,13 @@ class BirdRepository:
     def get_bird_by_ebird_id(self, ebird_id: str) -> Optional[Bird]:
         return self.db.query(Bird).filter(Bird.ebird_id == ebird_id).first()
 
+    def get_user_observations(self, skip: int = 0, limit: int = 100, user_id: uuid.UUID = None):
+        query = self.db.query(UserBird).options(joinedload(UserBird.bird))
+
+        if user_id:
+            query = query.filter(UserBird.user_id == user_id)
+
+        return query.offset(skip).limit(limit).all()
     def create_user_bird_observation(self, user_bird: UserBird) -> UserBird:
         self.db.add(user_bird)
         self.db.commit()

@@ -1,5 +1,5 @@
 enum Api {
-    static let baseUrl = "https://f989-82-79-161-115.ngrok-free.app/"
+    static let baseUrl = "https://63cd-82-79-161-253.ngrok-free.app/"
     
     static var birdsEndpoint: String {
         return baseUrl + "birds?limit=100"
@@ -32,4 +32,9 @@ enum Api {
     static var login: String {
         return baseUrl + "login"
     }
+    
+    static var myObservations: String {
+        return baseUrl + "myobservations"
+    }
+    
 }

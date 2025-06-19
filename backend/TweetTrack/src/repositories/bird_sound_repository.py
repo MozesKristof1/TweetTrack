@@ -5,7 +5,6 @@ import uuid
 from db_tables import UserBirdSound
 
 
-
 class BirdSoundRepository:
     def __init__(self, db: Session):
         self.db = db

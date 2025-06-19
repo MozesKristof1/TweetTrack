@@ -2,7 +2,6 @@ import MapKit
 import SwiftUI
 import CoreLocation
 
-
 struct BirdDetailView: View {
     var bird: Bird
     let manager = CLLocationManager()
@@ -13,9 +12,11 @@ struct BirdDetailView: View {
     @State private var selectedImage: UIImage?
     @State private var showImagePicker = false
     @State private var showObservationSheet = false
+    @State private var showImageViewer = false
+    @State private var selectedImageForViewing: UIImage?
+    
     @StateObject private var observationViewModel = ObservationViewModel()
     @StateObject private var imageUploadViewModel = ImageUploadViewModel()
-    
     @StateObject private var locationManager = LocationManager()
     
     @EnvironmentObject var authService: AuthService
@@ -53,8 +54,14 @@ struct BirdDetailView: View {
                                 // TODO: make ui for this
                                 print("User not logged in")
                             }
+                        },
+                        onImageTapped: { image in
+                            selectedImageForViewing = image
+                            showImageViewer = true
                         }
                     )
+                    
+    
                     
                     MapCardView(
                         birdLocations: $birdLocationFetcher.birdLocation,
@@ -68,17 +75,23 @@ struct BirdDetailView: View {
             }
         }
         .sheet(isPresented: $showObservationSheet) {
-            CreateObservationSheet(
+            ObservationSheet(
                 bird: bird,
                 observationViewModel: observationViewModel,
                 imageUploadViewModel: imageUploadViewModel,
-                userToken: authService.accessToken,
+                userToken: authService.accessToken ?? "",
                 userLocation: locationManager.location,
                 onComplete: {
                     Task {
                         await userImagesFetcher.fetchUserImages(for: bird.ebird_id)
                     }
                 }
+            )
+        }
+        .fullScreenCover(isPresented: $showImageViewer) {
+            ImageViewerSheet(
+                image: selectedImageForViewing,
+                isPresented: $showImageViewer
             )
         }
         .task {
@@ -91,38 +104,97 @@ struct BirdDetailView: View {
     }
 }
 
-struct StepIndicator: View {
-    let step: Int
-    let title: String
-    let isActive: Bool
-    let isCompleted: Bool
+struct ImageViewerSheet: View {
+    let image: UIImage?
+    @Binding var isPresented: Bool
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
     
     var body: some View {
-        VStack(spacing: 4) {
-            ZStack {
-                Circle()
-                    .fill(isCompleted ? Color.green : (isActive ? Color.accentColor : Color.gray))
-                    .frame(width: 30, height: 30)
-                
-                if isCompleted {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.white)
-                        .font(.caption.bold())
-                } else {
-                    Text("\(step)")
-                        .foregroundColor(.white)
-                        .font(.caption.bold())
-                }
-            }
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
             
-            Text(title)
-                .font(.caption)
-                .foregroundColor(isActive ? .primary : .secondary)
+            VStack {
+                HStack {
+                    Spacer()
+                    Button("Done") {
+                        isPresented = false
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                }
+                
+                Spacer()
+                
+                if let image = image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .scaleEffect(scale)
+                        .offset(offset)
+                        .gesture(
+                            SimultaneousGesture(
+                                MagnificationGesture()
+                                    .onChanged { value in
+                                        scale = lastScale * value
+                                    }
+                                    .onEnded { _ in
+                                        if scale < 1 {
+                                            withAnimation(.spring()) {
+                                                scale = 1
+                                                offset = .zero
+                                            }
+                                        } else if scale > 4 {
+                                            withAnimation(.spring()) {
+                                                scale = 4
+                                            }
+                                        }
+                                        lastScale = scale
+                                    },
+                                DragGesture()
+                                    .onChanged { value in
+                                        if scale > 1 {
+                                            offset = CGSize(
+                                                width: lastOffset.width + value.translation.width,
+                                                height: lastOffset.height + value.translation.height
+                                            )
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        lastOffset = offset
+                                    }
+                            )
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring()) {
+                                if scale == 1 {
+                                    scale = 2
+                                    lastScale = 2
+                                } else {
+                                    scale = 1
+                                    lastScale = 1
+                                    offset = .zero
+                                    lastOffset = .zero
+                                }
+                            }
+                        }
+                }
+                
+                Spacer()
+            }
+        }
+        .onAppear {
+            // Reset zoom when sheet appears
+            scale = 1.0
+            lastScale = 1.0
+            offset = .zero
+            lastOffset = .zero
         }
     }
 }
-
-
 
 
 struct ThemedButton: View {

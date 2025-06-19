@@ -5,20 +5,30 @@ struct SoundDetailView: View {
     let detectionService: BirdDetectionService
     let postService: AudioUploadService
     
-    @State private var detectionResult: String
+    @State private var detectionResult: String?
     @State private var errorMessage: String?
     @State private var isIdentifying: Bool = false
     @State private var showTaxonomy = false
+    
+    @StateObject private var segmentationViewModel = SoundProcessingViewModel()
+    @State private var showSegmentationResults = false
 
     @Environment(\.modelContext) private var context
     
+    @StateObject private var audioPlayerService = AudioPlayerService()
+
     init(sound: BirdSoundItem, detectionService: BirdDetectionService, postService: AudioUploadService) {
         self.sound = sound
         self.detectionService = detectionService
         self.postService = postService
-        self._detectionResult = State(initialValue: detectionService.detectBirdSound(audioURL: URL(fileURLWithPath: sound.audioDataPath)).0)
+
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fullAudioURL = documentsDirectory.appendingPathComponent(sound.audioDataPath)
+
+        let initialDetection = detectionService.detectBirdSound(audioURL: fullAudioURL).0
+        self._detectionResult = State(initialValue: initialDetection)
         
-        if detectionResult == "Bird detected" {
+        if initialDetection == "Bird detected" {
             sound.detectedBird = true
         }
     }
@@ -36,11 +46,82 @@ struct SoundDetailView: View {
                     .frame(height: 150)
                     .padding(.horizontal)
                 
-                Text(detectionResult)
+                Text("Bird detected")
                     .font(.headline)
                     .foregroundColor(.gray)
                     .padding()
                 
+                // Auto Segmentation Button
+                Button(action: {
+                    segmentationViewModel.processAndSegment(item: sound)
+                }) {
+                    HStack {
+                        if segmentationViewModel.isProcessing {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 5)
+                        }
+                        Text(segmentationViewModel.isProcessing ? "Segmenting Audio..." : " Auto Segment Audio")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(segmentationViewModel.isProcessing ? Color.gray : Color.green)
+                    .cornerRadius(10)
+                    .disabled(segmentationViewModel.isProcessing)
+                }
+                .padding(.horizontal, 20)
+                
+                // Show segmentation results
+                if !segmentationViewModel.newSoundItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("Generated Segments (\(segmentationViewModel.newSoundItems.count))")
+                                .font(.headline)
+                                .foregroundColor(.green)
+                            
+                            Spacer()
+                            
+                            Button("Save All") {
+                                saveSegmentedSounds()
+                            }
+                            .font(.subheadline)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        
+                        LazyVStack(spacing: 8) {
+                            ForEach(segmentationViewModel.newSoundItems, id: \.id) { segmentItem in
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(segmentItem.title)
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        Text("Duration: \(String(format: "%.1f", segmentItem.duration))s")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    // Mini waveform or play button could go here
+//                                    Button(action: {
+//                                        audioPlayerService.playAudio(at: segmentItem.audioDataPath)
+//                                    }) {
+//                                        Image(systemName: "waveform")
+//                                            .foregroundColor(.green)
+//                                    }
+                                    
+                                }
+                                .padding(8)
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+                }
                 if sound.birdName == nil {
                     Button(action: identifyBird) {
                         Text(isIdentifying ? "Identifying..." : "Identify the Bird")
@@ -117,14 +198,13 @@ struct SoundDetailView: View {
                         }
                         .sheet(isPresented: $showTaxonomy) {
                             NavigationStack {
-                                TaxonomyCardView()
+                                TaxonomyCardView(sound: sound)
                             }
                         }
                         .padding()
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(15)
                         .padding(.horizontal)
-                        
                     }
                     
                     if let errorMessage = errorMessage {
@@ -156,7 +236,10 @@ struct SoundDetailView: View {
                         scientificName: identification.1,
                         identificationText: identification.2,
                         imageUrl: identification.3,
-                        probability: identification.4
+                        probability: identification.4,
+                        genus: identification.5,
+                        family: identification.6,
+                        order: identification.7
                     )
                     
                     try? context.save()
@@ -173,13 +256,29 @@ struct SoundDetailView: View {
         }
     }
     
-    private func parseBirdIdentification(_ data: Data) throws -> (String, String, String, String, Double) {
+    private func saveSegmentedSounds() {
+        for segmentItem in segmentationViewModel.newSoundItems {
+            context.insert(segmentItem)
+        }
+        
+        do {
+            try context.save()
+            segmentationViewModel.newSoundItems.removeAll()
+        } catch {
+            errorMessage = "Failed to save segmented sounds: \(error.localizedDescription)"
+        }
+    }
+    
+    private func parseBirdIdentification(_ data: Data) throws -> (String, String, String, String, Double, String?, String?, String?) {
         struct BirdIdentification: Codable {
             let commonName: String
             let scientificName: String
             let identificationText: String
             let imageUrl: String
             let probability: Double
+            let genus: String?
+            let family: String?
+            let order: String?
                
             enum CodingKeys: String, CodingKey {
                 case commonName = "common_name"
@@ -187,6 +286,9 @@ struct SoundDetailView: View {
                 case identificationText = "identification_text"
                 case imageUrl = "image_url"
                 case probability
+                case genus
+                case family
+                case order
             }
         }
            
@@ -198,7 +300,10 @@ struct SoundDetailView: View {
             identification.scientificName,
             identification.identificationText,
             identification.imageUrl,
-            identification.probability
+            identification.probability,
+            identification.genus,
+            identification.family,
+            identification.order
         )
     }
 }

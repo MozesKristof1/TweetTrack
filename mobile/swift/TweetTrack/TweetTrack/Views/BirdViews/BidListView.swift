@@ -81,14 +81,9 @@ struct BirdListView: View {
             Button {
                 print("asdf")
             } label: {
-                Image(systemName: "gearshape")
+                Image(systemName: "location.circle.fill")
             }
 
-            Button {
-                print("asd")
-            } label: {
-                Image(systemName: "gearshape")
-            }
         }
 
         if isSearching {

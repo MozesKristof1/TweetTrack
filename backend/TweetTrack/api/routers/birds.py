@@ -1,16 +1,26 @@
 from fastapi import APIRouter, Depends
-from typing import List
 from sqlalchemy.orm import Session
+from typing import List
 
 from db import get_db
 from models.birdDTO import BirdDTO
-from db_tables import Bird
+from services.bird_service import BirdService
+from repositories.bird_repository import BirdRepository
 
 router = APIRouter()
 
 
-@router.get("/birds", response_model=List[BirdDTO])
-def get_birds(limit: int = 100, db: Session = Depends(get_db)):
-    birds = db.query(Bird).limit(limit).all()
-    return birds
+def get_bird_service(db: Session = Depends(get_db)) -> BirdService:
+    bird_repo = BirdRepository(db)
 
+    return BirdService(
+        bird_repo=bird_repo,
+    )
+
+
+@router.get("/birds", response_model=List[BirdDTO])
+def get_birds(
+        limit: int = 100,
+        service: BirdService = Depends(get_bird_service)
+):
+    return service.get_all_birds(limit=limit, offset=0)
