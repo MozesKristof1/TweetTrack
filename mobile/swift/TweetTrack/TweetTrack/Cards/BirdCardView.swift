@@ -3,6 +3,7 @@ import SwiftUI
 struct BirdCardView: View {
     let bird: Bird
     @State private var image: UIImage? = nil
+    let isNearby: Bool
     
     var body: some View {
         HStack {
@@ -33,6 +34,14 @@ struct BirdCardView: View {
                     .truncationMode(.tail)
             }
             .padding()
+            
+            Spacer()
+            
+            if isNearby {
+                Image(systemName: "location.fill")
+                    .foregroundColor(.blue)
+                    .font(.caption)
+            }
         }
         .frame(height: 120)
         .padding()
@@ -47,7 +56,7 @@ struct BirdCardView: View {
     private func loadImage() {
         guard let url = URL(string: bird.base_image_url ?? "") else { return }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data, let downloadedImage = UIImage(data: data) {
                 DispatchQueue.main.async {
                     self.image = downloadedImage

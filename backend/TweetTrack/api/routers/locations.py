@@ -32,7 +32,15 @@ async def get_locations_by_bird_id(
 ):
     return service.get_locations_by_bird_id(bird_id)
 
-
+@router.get("/location/area", response_model=List[BirdLocationDTO])
+async def get_locations_in_area(
+    min_lat: float = Query(..., description="Minimum latitude"),
+    max_lat: float = Query(..., description="Maximum latitude"),
+    min_lng: float = Query(..., description="Minimum longitude"),
+    max_lng: float = Query(..., description="Maximum longitude"),
+    service: BirdLocationService = Depends(get_bird_location_service)
+):
+    return service.get_locations_in_area(min_lat, max_lat, min_lng, max_lng)
 @router.get("/location/{location_id}", response_model=BirdLocationDTO)
 async def get_location_by_id(
     location_id: uuid.UUID,
@@ -43,13 +51,3 @@ async def get_location_by_id(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
-@router.get("/location/area", response_model=List[BirdLocationDTO])
-async def get_locations_in_area(
-    min_lat: float = Query(..., description="Minimum latitude"),
-    max_lat: float = Query(..., description="Maximum latitude"),
-    min_lng: float = Query(..., description="Minimum longitude"),
-    max_lng: float = Query(..., description="Maximum longitude"),
-    service: BirdLocationService = Depends(get_bird_location_service)
-):
-    return service.get_locations_in_area(min_lat, max_lat, min_lng, max_lng)

@@ -1,5 +1,5 @@
 enum Api {
-    static let baseUrl = "https://63cd-82-79-161-253.ngrok-free.app/"
+    static let baseUrl = "https://1526-82-79-161-253.ngrok-free.app/"
     
     static var birdsEndpoint: String {
         return baseUrl + "birds?limit=100"
@@ -20,6 +20,10 @@ enum Api {
     static var birdLocationsEndpoint: String {
         return baseUrl + "location"
     }
+    
+    static func birdLocationsInArea(minLat: Double, maxLat: Double, minLng: Double, maxLng: Double) -> String {
+           return baseUrl + "location/area?min_lat=\(minLat)&max_lat=\(maxLat)&min_lng=\(minLng)&max_lng=\(maxLng)"
+       }
     
     static var identifyBird: String {
         return baseUrl + "classify"
