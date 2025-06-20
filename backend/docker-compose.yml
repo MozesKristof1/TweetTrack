@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: TweetTrack
@@ -8,6 +6,8 @@ services:
       - "8000:8000"
     volumes:
       - ./TweetTrack/api:/app/api
+      - ./TweetTrack/src:/app/src
+      - ./TweetTrack/start.sh:/app/start.sh
     environment:
       - PYTHONPATH=/app/src
       - DATABASE_URL=postgresql://postgres:tweetTrack@postgres:5432/tweettrack_db

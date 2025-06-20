@@ -43,13 +43,22 @@ def start_server():
         else:
             print(f"Data incomplete! Received {len(audio_data)} bytes out of {data_size}")
 
-        result = classify_bird(convert_bytes_to_MP3(audio_data))
+        #result = classify_bird(convert_bytes_to_MP3(audio_data))
 
-        scraped_bird = get_species_info(result[0])
+        bird_name, probability, bird_genus, bird_family, bird_order = classify_bird(audio_data)
+
+        scraped_bird = get_species_info(bird_name)
         print(scraped_bird)
 
         # Add probability to the scraped bird
-        scraped_bird['probability'] = float(result[1])
+        scraped_bird['probability'] = float(probability)
+
+        # Add taxonomy
+
+        scraped_bird['probability'] = float(probability)
+        scraped_bird['genus'] = bird_genus
+        scraped_bird['family'] = bird_family
+        scraped_bird['order'] = bird_order
 
         scraped_bird_json = json.dumps(scraped_bird)
 

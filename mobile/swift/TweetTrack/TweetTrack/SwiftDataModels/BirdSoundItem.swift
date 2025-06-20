@@ -17,6 +17,11 @@ final class BirdSoundItem: Identifiable {
     var imageUrl: String?
     var confidence: Double?
     
+    // Taxonomy
+    var genus: String?
+    var family: String?
+    var order: String?
+    
     init(title: String, audioDataPath: String, duration: Double, dateCreated: Date = Date()) {
         self.id = UUID()
         self.title = title
@@ -25,12 +30,24 @@ final class BirdSoundItem: Identifiable {
         self.dateCreated = dateCreated
     }
     
-    func updateBirdIdentification(name: String, scientificName: String, identificationText: String, imageUrl: String, probability: Double) {
+    func updateBirdIdentification(
+        name: String,
+        scientificName: String,
+        identificationText: String,
+        imageUrl: String,
+        probability: Double,
+        genus: String? = nil,
+        family: String? = nil,
+        order: String? = nil
+    ) {
         self.detectedBird = true
         self.birdName = name
         self.scientificName = scientificName
         self.birdDescription = identificationText
         self.imageUrl = imageUrl
         self.confidence = probability
+        self.genus = genus
+        self.family = family
+        self.order = order
     }
 }

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct BottomNavigationView: View {
+    @EnvironmentObject var authService: AuthService
+    
     var body: some View {
         TabView {
             NavigationView {
@@ -26,6 +28,7 @@ struct BottomNavigationView: View {
         }
     }
 }
+
 #Preview {
     BottomNavigationView()
 }

@@ -4,7 +4,7 @@ final class AudioUploadService : ObservableObject{
 
     func uploadSoundFile(fileURL: URL, completion: @escaping (Result<Data, Error>) -> Void) {
         let boundary = UUID().uuidString
-        let urlString = Localhost.identifyBird
+        let urlString = Api.identifyBird
         let url = URL(string: urlString)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

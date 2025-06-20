@@ -26,7 +26,7 @@ struct BirdCardView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
 
-                Text(bird.description)
+                Text(bird.description ?? "")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
@@ -45,7 +45,7 @@ struct BirdCardView: View {
     }
     
     private func loadImage() {
-        guard let url = URL(string: bird.base64Picture) else { return }
+        guard let url = URL(string: bird.base_image_url ?? "") else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data, let downloadedImage = UIImage(data: data) {

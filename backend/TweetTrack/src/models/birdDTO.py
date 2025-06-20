@@ -5,6 +5,7 @@ from typing_extensions import Optional
 
 class BirdDTO(BaseModel):
     id: UUID
+    ebird_id: str
     name: str
-    base64Picture: Optional[str] = None
+    base_image_url: Optional[str] = None
     description: str
