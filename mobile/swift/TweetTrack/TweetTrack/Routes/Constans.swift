@@ -22,7 +22,7 @@ enum Api {
     }
     
     static var identifyBird: String {
-        return baseUrl + "upload-sound"
+        return baseUrl + "classify"
     }
     
     static var register: String {

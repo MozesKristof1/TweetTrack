@@ -17,7 +17,7 @@ AI_HOST = "model-inference"
 AI_PORT = 9000
 
 
-@router.post("/upload-sound/")
+@router.post("/classify")
 async def upload_sound_file(file: UploadFile = File(...)):
     try:
         audio_bytes = await file.read()
